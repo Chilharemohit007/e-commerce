@@ -1,0 +1,32 @@
+Register JWT Filter
+
+This is where your custom filter becomes part of Spring Security.
+
+http.addFilterBefore(
+        jwtAuthenticationFilter,
+        UsernamePasswordAuthenticationFilter.class
+);
+
+Why before?
+
+Default flow:
+
+UsernamePasswordAuthenticationFilter
+
+↓
+
+AuthorizationFilter
+
+Our flow:
+
+JwtAuthenticationFilter
+
+↓
+
+UsernamePasswordAuthenticationFilter
+
+↓
+
+AuthorizationFilter
+
+JWT authentication must happen before authorization decisions are made.

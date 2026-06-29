@@ -1,0 +1,7 @@
+Build the Chain
+
+Finally:
+
+return http.build();
+
+Spring creates the complete filter chain during startup.

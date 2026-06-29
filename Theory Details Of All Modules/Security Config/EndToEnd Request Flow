@@ -1,0 +1,33 @@
+End-to-End Request Flow
+
+Client Request
+        │
+        ▼
+SecurityFilterChain
+        │
+        ▼
+JwtAuthenticationFilter
+        │
+        ▼
+Extract JWT
+        │
+        ▼
+Load UserDetails
+        │
+        ▼
+Validate Token
+        │
+        ▼
+SecurityContextHolder
+        │
+        ▼
+AuthorizationFilter
+        │
+        ▼
+Controller
+        │
+        ▼
+Service
+        │
+        ▼
+Repository

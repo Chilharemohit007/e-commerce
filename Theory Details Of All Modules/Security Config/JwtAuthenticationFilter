@@ -1,0 +1,39 @@
+Complete Request Flow
+
+HTTP Request
+        │
+        ▼
+Read Authorization Header
+        │
+        ▼
+Bearer Token Present?
+        │
+   ┌────┴────┐
+   │         │
+ No         Yes
+   │         │
+Continue   Extract JWT
+             │
+             ▼
+      Extract Username
+             │
+             ▼
+     SecurityContext Empty?
+             │
+             ▼
+      Load UserDetails
+             │
+             ▼
+      Validate JWT
+             │
+             ▼
+Create UsernamePasswordAuthenticationToken
+             │
+             ▼
+Populate SecurityContextHolder
+             │
+             ▼
+Continue Filter Chain
+             │
+             ▼
+Controller

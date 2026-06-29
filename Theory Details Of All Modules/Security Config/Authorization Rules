@@ -1,0 +1,30 @@
+Authorization Rules
+
+Public endpoints:
+
+/api/v1/auth/**
+
+Everything else:
+
+Authenticated
+
+Configuration:
+
+http.authorizeHttpRequests(auth -> auth
+
+        .requestMatchers(
+                "/api/v1/auth/**"
+        ).permitAll()
+
+        .anyRequest()
+
+        .authenticated()
+);
+
+Meaning:
+
+Endpoint	                Authentication
+/api/v1/auth/login	                No
+/api/v1/auth/register	            No
+/api/v1/products	                Yes
+/api/v1/orders	                    Yes

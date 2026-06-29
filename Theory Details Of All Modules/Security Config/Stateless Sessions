@@ -1,0 +1,48 @@
+Stateless Sessions
+
+This is one of the most important settings.
+
+http.sessionManagement(session ->
+        session.sessionCreationPolicy(
+                SessionCreationPolicy.STATELESS
+        )
+);
+What Happens?
+
+Without JWT:
+
+Login
+
+↓
+
+HTTP Session
+
+↓
+
+Session ID
+
+↓
+
+Cookie
+
+With JWT:
+
+Login
+
+↓
+
+JWT
+
+↓
+
+Every Request
+
+↓
+
+JWT Validation
+
+↓
+
+No Session
+
+The server does not remember users between requests.

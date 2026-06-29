@@ -1,0 +1,82 @@
+Client Request
+        │
+        ▼
+JwtAuthenticationFilter
+        │
+        ▼
+JWT Missing / Invalid
+        │
+        ▼
+AuthenticationEntryPoint
+        │
+        ▼
+Build ApiResponse
+        │
+        ▼
+ObjectMapper
+        │
+        ▼
+401 Unauthorized JSON
+
+
+
+
+
+Where Does AccessDeniedHandler Fit?
+
+A request passes through Spring Security like this:
+
+                 HTTP Request
+                      │
+                      ▼
+           JwtAuthenticationFilter
+                      │
+                      ▼
+          SecurityContextHolder
+                      │
+                      ▼
+           Authorization Manager
+                      │
+        ┌─────────────┴─────────────┐
+        ▼                           ▼
+   Has Permission?                No Permission
+        │                           │
+        ▼                           ▼
+   Controller              AccessDeniedHandler
+                                    │
+                                    ▼
+                            403 Forbidden
+
+Notice the difference:
+
+AuthenticationEntryPoint → User is not authenticated.
+AccessDeniedHandler → User is authenticated, but not authorized.
+
+
+
+
+
+
+
+
+                   Request
+                      │
+                      ▼
+          JwtAuthenticationFilter
+                      │
+                      ▼
+            Authentication Success?
+                 │            │
+                No           Yes
+                 │            ▼
+                 ▼      Authorization Check
+AuthenticationEntryPoint      │
+      401 JSON                ▼
+                     Has Required Role?
+                         │          │
+                        Yes        No
+                         │          ▼
+                         ▼   AccessDeniedHandler
+                    Controller      │
+                                    ▼
+                               403 JSON

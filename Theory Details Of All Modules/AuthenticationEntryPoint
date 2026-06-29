@@ -1,0 +1,65 @@
+What is AuthenticationEntryPoint?
+
+It is the component that Spring Security calls when an unauthenticated user tries to access a protected resource.
+
+Example:
+
+GET /api/v1/orders
+
+Authorization: (missing)
+
+Flow:
+
+Client
+   │
+   ▼
+Security Filter Chain
+   │
+   ▼
+JwtAuthenticationFilter
+   │
+   ▼
+No Authentication Found
+   │
+   ▼
+AuthenticationEntryPoint
+   │
+   ▼
+401 Unauthorized JSON
+
+Without it, Spring Security returns its default error response.
+
+With it, every 401 response matches your ApiResponse format.
+
+Difference Between 401 and 403
+
+This is one of the most common interview questions.
+
+Scenario	Status Code	Handler
+No JWT	401 Unauthorized	AuthenticationEntryPoint
+Invalid JWT	401 Unauthorized	AuthenticationEntryPoint
+Expired JWT	401 Unauthorized	AuthenticationEntryPoint
+Valid JWT but insufficient role	403 Forbidden	AccessDeniedHandler
+
+Example:
+
+No Token
+      │
+      ▼
+AuthenticationEntryPoint
+      │
+      ▼
+401
+Valid Token
+      │
+      ▼
+ROLE_CUSTOMER
+      │
+      ▼
+Accessing ADMIN API
+      │
+      ▼
+AccessDeniedHandler
+      │
+      ▼
+403

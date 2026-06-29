@@ -1,0 +1,12 @@
+Disable CSRF
+http.csrf(AbstractHttpConfigurer::disable);
+
+Why?
+
+CSRF protection is intended for browser-based applications using cookies.
+
+Your backend uses:
+
+Authorization: Bearer JWT
+
+There is no server-side session or cookie to protect, so CSRF is typically disabled for stateless REST APIs.

@@ -1,0 +1,42 @@
+AuthenticationManager
+
+During login:
+
+Email
+
+Password
+
+↓
+
+AuthenticationManager
+
+↓
+
+CustomUserDetailsService
+
+↓
+
+PasswordEncoder.matches()
+
+↓
+
+Success
+
+Expose it as a bean:
+
+@Bean
+public AuthenticationManager authenticationManager(
+        AuthenticationConfiguration configuration)
+        throws Exception {
+
+    return configuration.getAuthenticationManager();
+}
+Why Don't We Create It Ourselves?
+
+Spring already builds it with:
+
+UserDetailsService
+PasswordEncoder
+Authentication providers
+
+We simply retrieve the configured instance.

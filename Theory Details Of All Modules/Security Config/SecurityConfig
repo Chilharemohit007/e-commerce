@@ -1,0 +1,42 @@
+Responsibilities of SecurityConfig
+
+SecurityConfig
+│
+├── Configure SecurityFilterChain
+├── Configure JWT Filter
+├── Configure AuthenticationManager
+├── Configure PasswordEncoder
+├── Configure Public URLs
+├── Configure Protected URLs
+├── Disable CSRF (for REST APIs)
+├── Configure Stateless Session
+└── Configure Exception Handling
+
+Notice it does not:
+
+Generate JWTs
+Validate JWTs
+Load users
+Log requests
+
+It only wires everything together.
+
+
+Final Architecture
+
+                    Client
+                       │
+                       ▼
+              SecurityFilterChain
+                       │
+                       ▼
+             JwtAuthenticationFilter
+                       │
+                       ▼
+          SecurityContextHolder
+                       │
+                       ▼
+                 Authorization
+                       │
+                       ▼
+                 Controller
