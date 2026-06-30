@@ -1,5 +1,7 @@
 package com.e_commerce.shambhu.auth.service.impl;
 
+import com.e_commerce.shambhu.auth.dto.LoginRequest;
+import com.e_commerce.shambhu.auth.dto.LoginResponse;
 import com.e_commerce.shambhu.auth.dto.RegisterRequest;
 import com.e_commerce.shambhu.auth.dto.RegisterResponse;
 import com.e_commerce.shambhu.auth.entity.Role;
@@ -49,6 +51,11 @@ public class AuthServiceImpl implements AuthService {
         User savedUser = userRepository.save(user);
 
         return UserMapper.toResponse(savedUser);
+    }
+
+    @Override
+    public LoginResponse login(LoginRequest request) {
+        return null;
     }
 
     /**

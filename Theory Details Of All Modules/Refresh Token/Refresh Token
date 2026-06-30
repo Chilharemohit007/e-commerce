@@ -1,0 +1,1474 @@
+Refresh Token Lifecycle
+Login
+    │
+    ▼
+Create Refresh Token
+    │
+    ▼
+Save Database
+    │
+    ▼
+Client Stores Token
+    │
+    ▼
+POST /refresh
+    │
+    ▼
+Verify
+    │
+    ▼
+Generate New Access Token
+    │
+    ▼
+(Optional Rotation)
+    │
+    ▼
+Return Response
+
+
+
+Current Authentication Flow
+
+Right now your application works like this:
+
+                Login
+                  │
+                  ▼
+      AuthenticationManager
+                  │
+                  ▼
+        Username + Password
+                  │
+                  ▼
+        Generate Access Token
+                  │
+                  ▼
+              Client
+                  │
+                  ▼
+Authorization: Bearer JWT
+
+Everything works.
+
+But there is one problem.
+
+Problem
+
+Suppose
+
+    Access Token expires in
+
+    15 minutes
+
+    After 15 minutes
+
+    Client
+
+    ↓
+
+    401 Unauthorized
+
+    ↓
+
+    Login Again
+
+
+
+
+The user must enter username/password repeatedly.
+
+This is poor user experience.
+
+Professional Solution
+
+Instead of issuing only one token
+
+Issue two tokens.
+
+
+
+
+
+                 Login
+                   │
+                   ▼
+        AuthenticationManager
+                   │
+                   ▼
+         Generate Access Token
+                   │
+                   ▼
+        Generate Refresh Token
+                   │
+                   ▼
+             Client Stores Both
+
+Token Lifetimes
+
+Example
+
+    Access Token
+    15 Minutes
+
+    Refresh Token
+    30 Days
+
+
+Client Flow
+        Login
+
+        ↓
+
+        Access Token
+
+        +
+
+        Refresh Token
+
+        ↓
+
+        15 Minutes Later
+
+        ↓
+
+        Access Token Expired
+
+        ↓
+
+        POST /auth/refresh
+
+        ↓
+
+        New Access Token
+
+        ↓
+
+        Continue Working
+
+The user never logs in again.
+
+
+
+
+Why Two Tokens?
+
+Access Token
+
+    Small
+
+    Fast
+
+    Sent Every Request
+
+    Short Lifetime
+
+Refresh Token
+
+    Long Lifetime
+
+    Never Sent To APIs
+
+    Only Sent To /refresh
+
+    Can Be Revoked
+
+
+
+Why Store Refresh Tokens?
+
+Many developers ask:
+
+    If Access Tokens aren't stored, why store Refresh Tokens?
+
+    Because Refresh Tokens are powerful.
+
+    Anyone possessing a valid Refresh Token can generate new Access Tokens.
+
+    Therefore they must be controllable.
+
+
+
+Database
+
+Refresh Token
+
+↓
+
+Exists?
+
+↓
+
+YES
+
+↓
+
+Generate Access Token
+
+Logout
+
+Delete Refresh Token
+
+↓
+
+Cannot Refresh
+
+↓
+
+Must Login Again
+
+
+
+
+Enterprise Architecture
+
+                Login
+                  │
+                  ▼
+      AuthenticationManager
+                  │
+                  ▼
+      Access Token + Refresh Token
+                  │
+                  ▼
+              Client
+                  │
+     ┌────────────┴────────────┐
+     ▼                         ▼
+API Request              Refresh Request
+     │                         │
+Access Token            Refresh Token
+     │                         │
+     ▼                         ▼
+Jwt Filter            RefreshTokenService
+     │                         │
+     ▼                         ▼
+Controller         Generate New Access Token
+
+
+Where Should Refresh Tokens Be Stored?
+
+There are two common enterprise approaches.
+
+
+
+
+Option 1 — Database (Recommended for Learning)
+
+refresh_tokens
+
+    id
+
+    token
+
+    user_id
+
+    expiry_date
+
+    revoked
+
+    created_at
+
+Advantages:
+
+Easy to understand
+Easy to revoke
+Persistent
+Great for CRUD applications
+
+
+Option 2 — Redis (Recommended for High Scale)
+Redis
+
+token
+
+↓
+
+expiry
+
+Advantages:
+
+    Extremely fast
+    Automatic expiration
+    Excellent for distributed systems
+
+For our project, we'll use PostgreSQL. Later, you can replace the storage implementation with Redis without changing the API contract.
+
+Refresh Token Table Design
+
+A production-ready design could be:
+
+refresh_tokens
+------------------------------
+id                  BIGSERIAL
+token               VARCHAR(500) UNIQUE
+user_id             BIGINT
+expiry_date         TIMESTAMP
+revoked             BOOLEAN
+created_at          TIMESTAMP
+updated_at          TIMESTAMP
+
+Relationship:
+
+    User
+
+    1
+
+    ↓
+
+    N
+
+    RefreshToken
+
+This allows:
+
+Multiple devices per user.
+Independent logout per device.
+Auditing of active sessions.
+
+
+Why One-to-Many?
+
+Imagine:
+
+Laptop
+
+↓
+
+Refresh Token A
+
+Phone
+
+↓
+
+Refresh Token B
+
+Tablet
+
+↓
+
+Refresh Token C
+
+One user can legitimately have several active sessions.
+
+Project Structure
+
+    Here's how I'd organize the refresh token feature:
+
+    auth
+    ├── controller
+    │      └── AuthController
+    │
+    ├── service
+    │      ├── AuthService
+    │      ├── RefreshTokenService
+    │      └── impl
+    │             ├── AuthServiceImpl
+    │             └── RefreshTokenServiceImpl
+    │
+    ├── repository
+    │      └── RefreshTokenRepository
+    │
+    ├── entity
+    │      └── RefreshToken
+    │
+    ├── dto
+    │      ├── RefreshTokenRequest
+    │      └── LoginResponse
+
+
+Login Flow After Implementation
+Username
+
+Password
+
+↓
+
+AuthenticationManager
+
+↓
+
+Generate Access Token
+
+↓
+
+Generate Refresh Token
+
+↓
+
+Save Refresh Token
+
+↓
+
+Return Both Tokens
+
+Example response:
+
+    {
+      "accessToken": "...",
+      "refreshToken": "...",
+      "tokenType": "Bearer",
+      "expiresIn": 900
+    }
+
+Refresh Flow
+POST /api/v1/auth/refresh
+
+↓
+
+Receive Refresh Token
+
+↓
+
+Exists In Database?
+
+↓
+
+Expired?
+
+↓
+
+Revoked?
+
+↓
+
+Generate New Access Token
+
+↓
+
+Return New Access Token
+
+
+Logout Flow
+POST /api/v1/auth/logout
+
+↓
+
+Receive Refresh Token
+
+↓
+
+Delete / Revoke
+
+↓
+
+Cannot Refresh Again
+Refresh Token Rotation (Recommended)
+
+A more secure approach is rotation.
+
+Instead of reusing the same refresh token:
+
+Old Refresh Token
+
+↓
+
+Validate
+
+↓
+
+Generate New Refresh Token
+
+↓
+
+Delete Old One
+
+↓
+
+Return New Pair
+
+Benefits:
+
+    Limits damage if a refresh token is stolen.
+    Detects replay attacks.
+    Aligns with modern security recommendations.
+
+
+Development Roadmap
+
+As a Solution Architect, I recommend implementing the feature in this order:
+
+    Step	        Component	                        Status
+    1	        RefreshToken Entity	⏳                   Next
+    2	        RefreshTokenRepository	                Pending
+    3	        RefreshTokenService	                    Pending
+    4	        Generate refresh token during login	    Pending
+    5	        Persist refresh token	                Pending
+    6	        Update LoginResponse	                Pending
+    7	        POST /api/v1/auth/refresh	            Pending
+    8	        Refresh token rotation	                Pending
+    9	        Logout (revoke/delete refresh token)	Pending
+
+
+
+One thing I'd improve from the proposed design is the audit fields. Since you're already building a production-grade application, I recommend introducing a reusable BaseEntity (or AuditableEntity) that all entities inherit from, instead of duplicating audit columns.
+
+For now, I'll show the RefreshToken entity with inherited audit fields.
+
+Step 1 - Database Design
+
+refresh_tokens
+
+Column	        Type	        Description
+id	            BIGSERIAL	    Primary Key
+token	        VARCHAR(512)	Refresh token value
+user_id	        BIGINT	        FK → users.id
+expiry_date	    TIMESTAMP	    Token expiration
+revoked	        BOOLEAN	        Whether token has been revoked
+created_at	    TIMESTAMP	    Created timestamp
+updated_at	    TIMESTAMP	    Last updated timestamp
+
+Relationship
+                 User
+                  │
+                  │ 1
+                  │
+                  │
+                  ▼
+          RefreshToken
+                  ▲
+                  │
+                  │ N
+
+Why ManyToOne?
+
+Because a user can be logged in from:
+
+Laptop
+Mobile
+Tablet
+Office Computer
+
+Each device gets its own refresh token.
+
+Project Structure
+auth
+├── entity
+│     ├── User.java
+│     ├── Role.java
+│     └── RefreshToken.java
+
+RefreshToken Entity
+
+package com.e_commerce.shambhu.auth.entity;
+
+import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(
+        name = "refresh_tokens",
+        indexes = {
+                @Index(name = "idx_refresh_token", columnList = "token"),
+                @Index(name = "idx_refresh_user", columnList = "user_id")
+        }
+)
+public class RefreshToken {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    /**
+     * Random refresh token (JWT or UUID).
+     */
+    @Column(nullable = false, unique = true, length = 512)
+    private String token;
+
+    /**
+     * One user can have multiple refresh tokens
+     * (multiple devices/sessions).
+     */
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+            name = "user_id",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_refresh_token_user")
+    )
+    private User user;
+
+    @Column(nullable = false)
+    private LocalDateTime expiryDate;
+
+    @Column(nullable = false)
+    private Boolean revoked = false;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    public RefreshToken() {
+    }
+
+    @PrePersist
+    public void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // getters and setters
+}
+
+
+Why Each Field Exists
+
+id
+@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+private Long id;
+
+Database primary key.
+
+token
+@Column(nullable = false, unique = true, length = 512)
+private String token;
+
+Stores the refresh token itself.
+
+Example:
+
+eyJhbGciOiJIUzI1NiJ9...
+
+or
+
+d7c9f1df-bb70-49e6...
+
+Unique because the same refresh token should never exist twice.
+
+user
+@ManyToOne(fetch = FetchType.LAZY)
+
+Allows:
+
+Mohit
+
+↓
+
+Laptop Token
+
+↓
+
+Mobile Token
+
+↓
+
+Tablet Token
+
+All are valid simultaneously.
+
+
+expiryDate
+private LocalDateTime expiryDate;
+
+Example:
+
+Current Time
+
+2026-07-14 10:00
+
+Expires
+
+2026-08-13 10:00
+
+
+revoked
+
+Instead of deleting immediately:
+
+private Boolean revoked;
+
+We can mark:
+
+revoked = true
+
+Benefits:
+
+Audit trail
+    Security investigation
+    Token reuse detection
+    Easier logout handling
+
+Why Use LocalDateTime?
+
+Avoid java.util.Date in new applications.
+
+LocalDateTime from java.time is:
+
+    Immutable
+    Thread-safe
+    Cleaner API
+    JPA-friendly
+
+Why Indexes?
+@Index(columnList = "token")
+
+During refresh:
+
+POST /refresh
+
+↓
+
+Find by token
+
+Without an index:
+
+Full Table Scan
+
+With an index:
+
+O(log n) lookup
+
+Similarly:
+
+@Index(columnList = "user_id")
+
+helps when logging out from all devices or listing active sessions.
+
+
+Generated Table
+
+CREATE TABLE refresh_tokens (
+    id BIGSERIAL PRIMARY KEY,
+
+    token VARCHAR(512) NOT NULL UNIQUE,
+
+    user_id BIGINT NOT NULL,
+
+    expiry_date TIMESTAMP NOT NULL,
+
+    revoked BOOLEAN NOT NULL,
+
+    created_at TIMESTAMP NOT NULL,
+
+    updated_at TIMESTAMP NOT NULL,
+
+    CONSTRAINT fk_refresh_token_user
+        FOREIGN KEY(user_id)
+        REFERENCES users(id)
+);
+
+
+Production Improvements
+
+For an enterprise-grade system, I recommend a few enhancements beyond the basic design:
+
+1. Store a Hash Instead of the Raw Refresh Token
+
+Instead of:
+
+token = eyJhbGc...
+
+Store:
+
+tokenHash = SHA-256(refreshToken)
+
+If the database is compromised, attackers cannot directly use the stored refresh tokens.
+
+2. Add Device Information
+private String deviceName;
+
+private String deviceId;
+
+private String ipAddress;
+
+private String userAgent;
+
+This enables features like:
+
+"Logged in from Chrome on Windows"
+"Sign out from this device"
+Suspicious login detection
+3. Replace revoked with Status (Optional)
+
+Instead of a boolean:
+
+public enum RefreshTokenStatus {
+    ACTIVE,
+    REVOKED,
+    EXPIRED
+}
+
+This provides richer state management if your application grows.
+
+4. Use a Shared Auditable Base Class
+
+Rather than repeating:
+
+createdAt
+updatedAt
+
+create:
+
+@MappedSuperclass
+public abstract class AuditableEntity {
+    // createdAt, updatedAt, @PrePersist, @PreUpdate
+}
+
+Then:
+
+public class RefreshToken extends AuditableEntity {
+    ...
+}
+
+This keeps all entities consistent and reduces duplication.
+
+
+
+
+
+
+
+Step 1: Create RefreshTokenRepository
+Package Structure
+com.e_commerce.shambhu.auth
+│
+├── repository
+│     ├── UserRepository
+│     ├── RoleRepository
+│     └── RefreshTokenRepository
+RefreshTokenRepository
+package com.e_commerce.shambhu.auth.repository;
+
+import com.e_commerce.shambhu.auth.entity.RefreshToken;
+import com.e_commerce.shambhu.auth.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface RefreshTokenRepository
+        extends JpaRepository<RefreshToken, Long> {
+
+    /**
+     * Find a refresh token.
+     */
+    Optional<RefreshToken> findByToken(String token);
+
+    /**
+     * Check whether a token exists.
+     */
+    boolean existsByToken(String token);
+
+    /**
+     * Find all active sessions for a user.
+     */
+    List<RefreshToken> findAllByUser(User user);
+
+    /**
+     * Delete one refresh token.
+     */
+    void deleteByToken(String token);
+
+    /**
+     * Delete all refresh tokens of a user.
+     */
+    void deleteAllByUser(User user);
+}
+Understanding Each Method
+1. findByToken()
+Optional<RefreshToken> findByToken(String token);
+SQL Generated
+SELECT *
+FROM refresh_tokens
+WHERE token = ?;
+Used By
+POST /api/v1/auth/refresh
+
+Flow
+
+Receive Refresh Token
+
+↓
+
+Find Token
+
+↓
+
+Validate
+
+↓
+
+Generate New Access Token
+
+This is the most frequently used method.
+
+2. existsByToken()
+boolean existsByToken(String token);
+SQL
+SELECT EXISTS(
+    SELECT 1
+    FROM refresh_tokens
+    WHERE token = ?
+);
+
+Useful when you only need to know whether a token exists, without loading the full entity.
+
+3. findAllByUser()
+List<RefreshToken> findAllByUser(User user);
+SQL
+SELECT *
+FROM refresh_tokens
+WHERE user_id = ?;
+Example
+Mohit
+
+↓
+
+Laptop
+
+↓
+
+Mobile
+
+↓
+
+Office Laptop
+
+↓
+
+Tablet
+
+Returns all active sessions.
+
+Useful for:
+
+"Manage Devices"
+"Show Active Sessions"
+Admin auditing
+4. deleteByToken()
+void deleteByToken(String token);
+SQL
+DELETE
+FROM refresh_tokens
+WHERE token = ?;
+
+Used when logging out from a single device.
+
+Flow
+
+Logout
+
+↓
+
+Delete Token
+
+↓
+
+Refresh Fails
+
+↓
+
+Login Required
+5. deleteAllByUser()
+void deleteAllByUser(User user);
+SQL
+DELETE
+FROM refresh_tokens
+WHERE user_id = ?;
+
+Useful for:
+
+Change password
+Account compromise
+Logout from all devices
+
+Flow
+
+User
+
+↓
+
+Delete All Tokens
+
+↓
+
+Every Device Logged Out
+Recommended Additional Repository Methods
+
+As an enterprise architect, I recommend adding a few more methods now so the repository supports future features without redesign.
+
+Find only active (non-revoked) tokens
+Optional<RefreshToken> findByTokenAndRevokedFalse(String token);
+
+SQL
+
+SELECT *
+FROM refresh_tokens
+WHERE token = ?
+AND revoked = false;
+Delete expired tokens
+void deleteByExpiryDateBefore(LocalDateTime now);
+
+Useful for scheduled cleanup jobs.
+
+Find expired tokens
+List<RefreshToken> findByExpiryDateBefore(LocalDateTime now);
+
+Useful for monitoring or reporting.
+
+Find active tokens for a user
+List<RefreshToken> findAllByUserAndRevokedFalse(User user);
+
+Returns only currently usable sessions.
+
+Final Repository (Recommended)
+package com.e_commerce.shambhu.auth.repository;
+
+import com.e_commerce.shambhu.auth.entity.RefreshToken;
+import com.e_commerce.shambhu.auth.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+public interface RefreshTokenRepository
+        extends JpaRepository<RefreshToken, Long> {
+
+    Optional<RefreshToken> findByToken(String token);
+
+    Optional<RefreshToken> findByTokenAndRevokedFalse(String token);
+
+    boolean existsByToken(String token);
+
+    List<RefreshToken> findAllByUser(User user);
+
+    List<RefreshToken> findAllByUserAndRevokedFalse(User user);
+
+    void deleteByToken(String token);
+
+    void deleteAllByUser(User user);
+
+    void deleteByExpiryDateBefore(LocalDateTime now);
+
+    List<RefreshToken> findByExpiryDateBefore(LocalDateTime now);
+}
+Repository Responsibilities
+
+Notice that the repository contains no business logic.
+
+It does not decide:
+
+Whether a token is expired.
+Whether a token is revoked.
+Whether a new token should be issued.
+Whether the user can log in.
+
+It only performs database operations.
+
+Repository
+
+↓
+
+CRUD
+
+↓
+
+Database
+
+Business decisions belong here:
+
+Controller
+
+↓
+
+RefreshTokenService
+
+↓
+
+Repository
+
+
+
+
+
+Production Enhancements
+
+As an enterprise architect, I'd plan for these enhancements:
+
+Hash refresh tokens before storing them.
+Rotate refresh tokens on every refresh request.
+Track device information (browser, OS, IP, user agent).
+Detect refresh token reuse (important security feature).
+Limit the number of active sessions per user if required.
+Store refresh tokens in Redis instead of PostgreSQL for very high-scale deployments.
+
+
+
+rchitectural Improvement
+
+Your current JwtService has methods like:
+
+generateAccessToken(UserDetails userDetails)
+
+generateRefreshToken(UserDetails userDetails)
+
+If RefreshTokenService also generates refresh tokens, we'll end up with two different classes responsible for token generation, which violates the Single Responsibility Principle (SRP).
+
+Instead, define clear responsibilities:
+
+JwtService
+
+Responsible only for:
+
+Creating JWTs
+Validating JWTs
+Parsing JWTs
+Reading claims
+JWT
+RefreshTokenService
+
+Responsible for:
+
+Storing refresh tokens
+Revoking refresh tokens
+Rotating refresh tokens
+Verifying refresh tokens
+Session management
+Database
+
+This separation is much cleaner.
+
+Updated Architecture
+                   Login
+                     │
+                     ▼
+               AuthServiceImpl
+                     │
+          ┌──────────┴──────────┐
+          ▼                     ▼
+     JwtService        RefreshTokenService
+          │                     │
+          ▼                     ▼
+ Access Token JWT       Store Refresh Token
+                                │
+                                ▼
+                        RefreshTokenRepository
+
+Notice:
+
+JwtService never talks to the database.
+
+So How Should createRefreshToken() Work?
+
+Instead of generating a JWT again, I recommend generating a cryptographically secure random token.
+
+Why?
+
+Refresh tokens are opaque tokens.
+
+Google
+
+Microsoft
+
+Amazon
+
+Netflix
+
+Most enterprise systems do not use JWTs for refresh tokens.
+
+Instead:
+
+8af8b33c8ef04bff8bded90d5d...
+
+A random string.
+
+Advantages:
+
+Cannot be decoded.
+Smaller payload.
+Easy to revoke.
+Easy to rotate.
+More secure if hashed before storage.
+Step 1 — RefreshTokenServiceImpl
+package com.e_commerce.shambhu.auth.service.impl;
+
+import com.e_commerce.shambhu.auth.dto.response.LoginResponse;
+import com.e_commerce.shambhu.auth.entity.RefreshToken;
+import com.e_commerce.shambhu.auth.entity.User;
+import com.e_commerce.shambhu.auth.repository.RefreshTokenRepository;
+import com.e_commerce.shambhu.auth.service.RefreshTokenService;
+import com.e_commerce.shambhu.config.JwtProperties;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@Transactional
+public class RefreshTokenServiceImpl implements RefreshTokenService {
+
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final JwtProperties jwtProperties;
+
+    public RefreshTokenServiceImpl(
+            RefreshTokenRepository refreshTokenRepository,
+            JwtProperties jwtProperties) {
+
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.jwtProperties = jwtProperties;
+    }
+
+}
+Why @Transactional?
+
+Every method modifies the database.
+
+Example:
+
+Generate Token
+
+↓
+
+Insert Row
+
+↓
+
+Commit
+
+If anything fails,
+
+everything rolls back.
+
+Step 2 — createRefreshToken(User user)
+
+Let's understand the flow first.
+
+Authenticated User
+
+↓
+
+Generate Secure Random Token
+
+↓
+
+Create RefreshToken Entity
+
+↓
+
+Expiry = Now + 30 Days
+
+↓
+
+Save
+
+↓
+
+Return Token
+Secure Random Token
+
+Never use
+
+Math.random()
+
+or
+
+UUID.randomUUID()
+
+for security-sensitive tokens.
+
+Use
+
+SecureRandom
+
+instead.
+
+Create helper:
+
+private String generateSecureToken() {
+    SecureRandom secureRandom = new SecureRandom();
+
+    byte[] token = new byte[64];
+
+    secureRandom.nextBytes(token);
+
+    return Base64.getUrlEncoder()
+            .withoutPadding()
+            .encodeToString(token);
+}
+
+Why 64 bytes?
+
+64 bytes
+
+↓
+
+512 bits
+
+↓
+
+Cryptographically Strong
+createRefreshToken()
+@Override
+public String createRefreshToken(User user) {
+
+    String token = generateSecureToken();
+
+    RefreshToken refreshToken = new RefreshToken();
+
+    refreshToken.setToken(token);
+
+    refreshToken.setUser(user);
+
+    refreshToken.setExpiryDate(
+            LocalDateTime.now()
+                    .plusSeconds(
+                            jwtProperties.getRefreshExpiration()
+                    )
+    );
+
+    refreshToken.setRevoked(false);
+
+    refreshTokenRepository.save(refreshToken);
+
+    return token;
+}
+Flow Diagram
+User
+
+↓
+
+SecureRandom
+
+↓
+
+Generate Token
+
+↓
+
+RefreshToken Entity
+
+↓
+
+Repository.save()
+
+↓
+
+PostgreSQL
+
+↓
+
+Return Token
+Why Return String Instead of Entity?
+
+Controller only needs
+
+{
+   "refreshToken":"..."
+}
+
+It doesn't care about
+
+id
+
+createdAt
+
+updatedAt
+
+user
+
+Returning entities unnecessarily leaks persistence details into higher layers.
+
+How Login Will Use It
+
+Later:
+
+String accessToken =
+        jwtService.generateAccessToken(userDetails);
+
+String refreshToken =
+        refreshTokenService.createRefreshToken(user);
+
+return LoginResponse.builder()
+        .accessToken(accessToken)
+        .refreshToken(refreshToken)
+        .build();
+
+Beautiful separation of concerns.
+
+Production Improvements
+
+In a real enterprise system, I would further enhance this by:
+
+Hashing the refresh token before storing it in the database (store SHA-256 hash, return raw token to the client).
+Adding device metadata (IP address, user agent, device name).
+Limiting the number of active refresh tokens per user.
+Detecting refresh token reuse as a sign of possible compromise.
+Rotating the refresh token every time /auth/refresh is called.
+
+
+
+
+Why 64 Bytes?
+64 bytes
+
+↓
+
+512 bits
+
+↓
+
+Very High Entropy
+
+↓
+
+Practically Impossible to Guess
+
+The generated token looks like:
+
+8E7kK2f9lR4vPq6N...
+
+instead of sequential IDs or predictable UUIDs.
+
+Why Base64 URL Encoder?
+
+Standard Base64 produces characters like:
+
++
+/
+=
+
+These require URL encoding.
+
+Using:
+
+Base64.getUrlEncoder()
+
+produces URL-safe tokens:
+
+A-Z
+a-z
+0-9
+-
+_
+
+
+
+
+What Happens During Login?
+
+                  User Login
+                      │
+                      ▼
+          AuthenticationManager.authenticate()
+                      │
+                      ▼
+               Authentication Success
+                      │
+          ┌───────────┴───────────┐
+          ▼                       ▼
+ Generate Access Token      Create Refresh Token
+          │                       │
+          ▼                       ▼
+      JwtService         RefreshTokenService
+                                  │
+                                  ▼
+                         Save into Database
+                                  │
+                                  ▼
+                         Return Refresh Token
