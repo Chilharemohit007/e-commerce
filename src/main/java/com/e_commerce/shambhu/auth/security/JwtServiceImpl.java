@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -76,7 +77,9 @@ public class JwtServiceImpl implements JwtService {
                 .compact();
     }
 
-    @Override
+
+
+   /* @Override
     public String generateRefreshToken(UserDetails userDetails) {
 
         Date issuedAt = new Date();
@@ -95,7 +98,7 @@ public class JwtServiceImpl implements JwtService {
                         getSigningKey()
                 )
                 .compact();
-    }
+    }*/
 
     @Override
     public String extractUsername(String token) {

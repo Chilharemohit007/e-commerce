@@ -11,6 +11,7 @@ import com.e_commerce.shambhu.auth.mapper.UserMapper;
 import com.e_commerce.shambhu.auth.repo.RoleRepository;
 import com.e_commerce.shambhu.auth.repo.UserRepository;
 import com.e_commerce.shambhu.auth.service.AuthService;
+import com.e_commerce.shambhu.auth.service.RefreshTokenService;
 import com.e_commerce.shambhu.common.exception.BadRequestException;
 import com.e_commerce.shambhu.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenService refreshTokenService;
 
     @Override
     public RegisterResponse register(RegisterRequest request) {
@@ -78,5 +80,10 @@ public class AuthServiceImpl implements AuthService {
                             + request.getMobileNumber()
             );
         }
+    }
+
+    @Override
+    public LoginResponse refreshAccessToken(String refreshToken) {
+        return refreshTokenService.refreshAccessToken(refreshToken);
     }
 }

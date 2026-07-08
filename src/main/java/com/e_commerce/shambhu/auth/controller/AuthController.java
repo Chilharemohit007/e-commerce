@@ -1,5 +1,7 @@
 package com.e_commerce.shambhu.auth.controller;
 
+import com.e_commerce.shambhu.auth.dto.LoginResponse;
+import com.e_commerce.shambhu.auth.dto.RefreshTokenRequest;
 import com.e_commerce.shambhu.auth.dto.RegisterRequest;
 import com.e_commerce.shambhu.auth.dto.RegisterResponse;
 import com.e_commerce.shambhu.auth.service.AuthService;
@@ -32,5 +34,21 @@ public class AuthController {
                 .body(ResponseBuilder.created(
                         "User registered successfully",
                         response));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<LoginResponse>> refreshToken(
+            @Valid @RequestBody RefreshTokenRequest request) {
+
+        LoginResponse response =
+                authService.refreshAccessToken(request.getRefreshToken());
+
+        return ResponseEntity.ok(
+                ResponseBuilder.buildSuccess(
+                        "Access token generated successfully.",
+                        HttpStatus.OK,
+                        response
+                )
+        );
     }
 }

@@ -6,6 +6,7 @@ import com.e_commerce.shambhu.auth.entity.RefreshToken;
 import com.e_commerce.shambhu.auth.entity.User;
 import com.e_commerce.shambhu.auth.repo.RefreshTokenRepository;
 import com.e_commerce.shambhu.auth.repo.UserRepository;
+import com.e_commerce.shambhu.auth.security.CustomUserDetails;
 import com.e_commerce.shambhu.auth.security.JwtService;
 import com.e_commerce.shambhu.auth.service.RefreshTokenService;
 import com.e_commerce.shambhu.common.exception.BusinessException;
@@ -14,12 +15,15 @@ import com.e_commerce.shambhu.common.exception.UnauthorizedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -76,7 +80,49 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     @Override
     public LoginResponse refreshAccessToken(String refreshToken) {
-        throw new UnsupportedOperationException("Not Implemented Yet");
+        RefreshToken storedToken = verifyRefreshToken(refreshToken);
+        User user = storedToken.getUser();
+        UserDetails userDetails = new CustomUserDetails(user);
+        Map<String, Object> claims = new HashMap<>();
+
+        claims.put("userId", user.getId());
+
+        claims.put(
+                "roles",
+                user.getRoles()
+                        .stream()
+                        .map(role -> role.getName())
+                        .toList()
+        );
+        String accessToken =
+                jwtService.generateAccessToken(
+                        claims,
+                        userDetails
+                );
+        storedToken.setRevoked(true);
+        refreshTokenRepository.save(storedToken);
+
+        String newRefreshToken = createRefreshToken(user);
+        LoginResponse response = new LoginResponse();
+
+        response.setAccessToken(accessToken);
+        response.setRefreshToken(newRefreshToken);
+        response.setTokenType("Bearer");
+        response.setExpiresIn(jwtProperties.getAccessTokenExpiration());
+        response.setUserId(user.getId());
+        response.setEmail(user.getEmail());
+
+        /*response.setRoles(
+                user.getRoles()
+                        .stream()
+                        .map(role -> role.getName())
+                        .toList()
+        );*/
+        LOGGER.info(
+                "Access token refreshed successfully for userId={}",
+                user.getId()
+        );
+        return response;
     }
 
     @Override
