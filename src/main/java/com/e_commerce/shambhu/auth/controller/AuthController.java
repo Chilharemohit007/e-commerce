@@ -1,20 +1,15 @@
 package com.e_commerce.shambhu.auth.controller;
 
-import com.e_commerce.shambhu.auth.dto.LoginResponse;
-import com.e_commerce.shambhu.auth.dto.RefreshTokenRequest;
-import com.e_commerce.shambhu.auth.dto.RegisterRequest;
-import com.e_commerce.shambhu.auth.dto.RegisterResponse;
+import com.e_commerce.shambhu.auth.dto.*;
 import com.e_commerce.shambhu.auth.service.AuthService;
+import com.e_commerce.shambhu.auth.service.EmailVerificationService;
 import com.e_commerce.shambhu.common.response.ApiResponse;
 import com.e_commerce.shambhu.common.response.ResponseBuilder;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -22,6 +17,9 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private EmailVerificationService emailVerificationService;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<RegisterResponse>> register(
@@ -49,6 +47,34 @@ public class AuthController {
                         HttpStatus.OK,
                         response
                 )
+        );
+    }
+
+    @GetMapping("/verify-email")
+    public ApiResponse<Object> verifyEmail(
+            @RequestParam String token) {
+
+        emailVerificationService.verifyEmail(token);
+
+        return ResponseBuilder.buildSuccess(
+                "Email verified successfully.",
+                HttpStatus.OK,
+                null
+        );
+    }
+
+    @PostMapping("/resend-verification")
+    public ApiResponse<Object> resendVerificationEmail(
+            @Valid @RequestBody
+            ResendVerificationEmailRequest request) {
+
+        emailVerificationService
+                .resendVerificationEmail(request.getEmail());
+
+        return ResponseBuilder.buildSuccess(
+                "Email verified successfully.",
+                HttpStatus.OK,
+                null
         );
     }
 }

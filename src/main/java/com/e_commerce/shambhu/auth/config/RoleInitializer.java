@@ -2,7 +2,7 @@ package com.e_commerce.shambhu.auth.config;
 
 import com.e_commerce.shambhu.auth.entity.Role;
 import com.e_commerce.shambhu.auth.enums.RoleType;
-import com.e_commerce.shambhu.auth.repo.RoleRepository;
+import com.e_commerce.shambhu.auth.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;

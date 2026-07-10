@@ -1,0 +1,21 @@
+    @Operation(
+    	    summary = "Get Land Region Users",
+    	    description = """
+    	        Supported URL patterns:
+
+    	        1. GET /v1/land-region/{landRegionType}/s/{stateCode}
+    	           - Returns all district users for the given state.
+
+    	        2. GET /v1/land-region/{landRegionType}/s/{stateCode}/o/{orgUnitCode}
+    	           - Returns all the users for a specific organization within a state.
+
+    	        3. GET /v1/land-region/{landRegionType}/o/{orgUnitCode}
+    	           - Returns all the users for the specified organization within center.
+
+    	        4. GET /v1/land-region/{landRegionType}/s/{stateCode}/d/{districtCode}
+    	           - Returns all the block or sub-district users for the specified district.
+
+    	        5. GET /v1/land-region/{landRegionType}/s/{stateCode}/d/{districtCode}/sub/{subDistrictCode}
+    	           - Returns all the village users for the specified sub-district.
+    	        """
+    	)

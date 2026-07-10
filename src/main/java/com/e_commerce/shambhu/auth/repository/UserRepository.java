@@ -1,4 +1,4 @@
-package com.e_commerce.shambhu.auth.repo;
+package com.e_commerce.shambhu.auth.repository;
 
 import com.e_commerce.shambhu.auth.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,7 +1,7 @@
 package com.e_commerce.shambhu.auth.security;
 
 import com.e_commerce.shambhu.auth.entity.User;
-import com.e_commerce.shambhu.auth.repo.UserRepository;
+import com.e_commerce.shambhu.auth.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
