@@ -1,0 +1,138 @@
+A slug is a URL-friendly, human-readable version of a name or title. It is commonly used in web applications to create clean, SEO-friendly URLs.
+
+For example, instead of using:
+
+https://shop.com/category?id=123
+
+you use:
+
+https://shop.com/categories/electronics
+
+Here, electronics is the slug.
+
+Why Do We Use Slugs?
+1. SEO (Search Engine Optimization)
+
+Search engines prefer meaningful URLs.
+
+❌ Not SEO-friendly:
+
+https://shop.com/category/15
+
+✅ SEO-friendly:
+
+https://shop.com/category/mobile-phones
+
+Google can understand that the page is about mobile phones.
+
+2. User-Friendly URLs
+
+Compare these:
+
+https://shop.com/category/7
+
+vs.
+
+https://shop.com/category/home-kitchen
+
+The second URL is much easier for users to read, remember, and share.
+
+3. Better Navigation
+
+For an e-commerce website:
+
+/categories/electronics
+
+/categories/electronics/mobiles
+
+/categories/electronics/mobiles/android
+
+/products/iphone-16-pro-max
+
+These URLs clearly describe the resource.
+
+Examples
+Category Name	Generated Slug
+Electronics	electronics
+Mobile Phones	mobile-phones
+Home & Kitchen	home-kitchen
+Men's Fashion	mens-fashion
+Laptops & Accessories	laptops-accessories
+How a Slug Is Generated
+
+Suppose the category name is:
+
+Home & Kitchen
+
+Steps:
+
+Convert to lowercase:
+home & kitchen
+Remove special characters:
+home kitchen
+Replace spaces with hyphens:
+home-kitchen
+
+Final slug:
+
+home-kitchen
+Handling Duplicate Slugs
+
+Suppose you already have:
+
+electronics
+
+and another category with the same name is created.
+
+Your SlugUtil can generate:
+
+electronics-1
+electronics-2
+electronics-3
+
+This ensures each URL remains unique.
+
+Where You'll Use Slugs
+Category
+GET /api/v1/categories/electronics
+Product
+GET /api/v1/products/iphone-16-pro-max
+Brand
+GET /api/v1/brands/apple
+Blog
+GET /blog/spring-boot-security-guide
+Database Example
+id	name	slug
+1	Electronics	electronics
+2	Mobile Phones	mobile-phones
+3	Home & Kitchen	home-kitchen
+
+The slug is typically stored in the database and should have a unique constraint.
+
+Spring Boot Example
+
+If a user sends:
+
+{
+  "name": "Home & Kitchen"
+}
+
+Your SlugUtil generates:
+
+String slug = slugUtil.generateUniqueSlug(request.getName());
+
+category.setSlug(slug);
+
+The database stores:
+
+name : Home & Kitchen
+
+slug : home-kitchen
+Enterprise Best Practice
+
+In production e-commerce platforms, slugs should be generated automatically by the backend, not provided by the client. This ensures:
+
+Consistent URL formatting.
+Uniqueness across resources.
+Protection against invalid or malicious input.
+SEO-friendly URLs without relying on client-side logic.

@@ -28,10 +28,9 @@ public class AuthController {
         RegisterResponse response =
                 authService.register(request);
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ResponseBuilder.created(
+        return ResponseBuilder.created(
                         "User registered successfully",
-                        response));
+                        response);
     }
 
     @PostMapping("/refresh")
@@ -41,17 +40,15 @@ public class AuthController {
         LoginResponse response =
                 authService.refreshAccessToken(request.getRefreshToken());
 
-        return ResponseEntity.ok(
-                ResponseBuilder.buildSuccess(
+        return ResponseBuilder.buildSuccess(
                         "Access token generated successfully.",
                         HttpStatus.OK,
                         response
-                )
-        );
+                );
     }
 
     @GetMapping("/verify-email")
-    public ApiResponse<Object> verifyEmail(
+    public ResponseEntity<ApiResponse<Object>> verifyEmail(
             @RequestParam String token) {
 
         emailVerificationService.verifyEmail(token);
@@ -64,7 +61,7 @@ public class AuthController {
     }
 
     @PostMapping("/resend-verification")
-    public ApiResponse<Object> resendVerificationEmail(
+    public ResponseEntity<ApiResponse<Object>> resendVerificationEmail(
             @Valid @RequestBody
             ResendVerificationEmailRequest request) {
 

@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Object>> handleValidationException(
+    public ResponseEntity<ApiResponse<?>> handleValidationException(
             MethodArgumentNotValidException ex) {
 
         List<String> errors = ex.getBindingResult()
@@ -42,6 +42,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest()
                 .body(ResponseBuilder.badRequest(
                         "Validation Failed",
-                        errors));
+                        errors).getBody());
     }
 }
