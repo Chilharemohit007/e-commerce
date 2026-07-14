@@ -17,15 +17,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Object>> handleResourceNotFoundException(
             ResourceNotFoundException ex) {
 
-        ApiResponse<Object> response = ResponseBuilder.buildError(
+        return ResponseBuilder.buildError(
                 ex.getMessage(),
                 HttpStatus.NOT_FOUND,
                 List.of(ex.getMessage())
         );
-
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(response);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -4,9 +4,13 @@ import com.e_commerce.shambhu.category.entity.Category;
 import com.e_commerce.shambhu.common.entity.Auditable;
 import com.e_commerce.shambhu.product.enums.ProductStatus;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
+@Getter
+@Setter
 @Entity
 @Table(
         name = "products",

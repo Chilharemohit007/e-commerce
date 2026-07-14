@@ -72,9 +72,11 @@ public interface ProductRepository extends
     /**
      * Find active products.
      */
+    @EntityGraph(attributePaths = "category")
     Page<Product> findByActiveTrueAndDeletedFalse(
-            Pageable pageable
-    );
+            Pageable pageable);
+
+    /* Using @EntityGraph ensures the Category is fetched in the same query, avoiding the N+1 query problem. */
 
     /**
      * Keyword search.
@@ -109,4 +111,6 @@ public interface ProductRepository extends
     List<Product> findByStockQuantityAndDeletedFalse(
             Integer quantity
     );
+
+    Optional<Product> findByNameIgnoreCaseAndDeletedFalse(String name);
 }
