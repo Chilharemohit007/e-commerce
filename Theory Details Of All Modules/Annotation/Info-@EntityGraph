@@ -127,3 +127,30 @@ Keep all relationships LAZY.
 Use @EntityGraph when a repository method always needs related entities.
 Use JOIN FETCH for complex custom queries.
 Avoid making relationships EAGER by default.
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+ @EntityGraph(attributePaths = "product")
+    Optional<ProductImage> findByIdAndDeletedFalse(Long id);
+
+Why Use @EntityGraph?
+
+Without @EntityGraph:
+
+ProductImage image = repository.findByIdAndDeletedFalse(id).get();
+
+Product product = image.getProduct();
+
+This can result in:
+
+SELECT product_image ...
+
+SELECT product ...
+
+(two queries)
+
+With:
+
+@EntityGraph(attributePaths = "product")
+
+Hibernate performs a fetch join and retrieves both entities in a single query, reducing database round trips and preventing the N+1 select problem.

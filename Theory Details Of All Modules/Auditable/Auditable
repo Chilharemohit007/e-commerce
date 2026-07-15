@@ -1,0 +1,151 @@
+Creating an Auditable superclass is a good practice because it centralizes common audit fields and avoids duplication across entities like Product, Category, ProductImage, User, etc.
+
+
+com.e_commerce.shambhu.common.entity
+Auditable.java
+package com.e_commerce.shambhu.common.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.MappedSuperclass;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
+public abstract class Auditable {
+
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @CreatedBy
+    @Column(name = "created_by", updatable = false, length = 100)
+    private String createdBy;
+
+    @LastModifiedBy
+    @Column(name = "updated_by", length = 100)
+    private String updatedBy;
+}
+
+Enable JPA Auditing
+
+Create a configuration class.
+
+JpaAuditingConfig.java
+package com.e_commerce.shambhu.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.AuditorAware;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+
+@Configuration
+@EnableJpaAuditing(auditorAwareRef = "auditorAware")
+public class JpaAuditingConfig {
+
+    @Bean
+    public AuditorAware<String> auditorAware() {
+        return new AuditorAwareImpl();
+    }
+}
+AuditorAware Implementation
+AuditorAwareImpl.java
+package com.e_commerce.shambhu.config;
+
+import org.springframework.data.domain.AuditorAware;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.util.Optional;
+
+public class AuditorAwareImpl implements AuditorAware<String> {
+
+    @Override
+    public Optional<String> getCurrentAuditor() {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken) {
+
+            return Optional.of("SYSTEM");
+        }
+
+        return Optional.of(authentication.getName());
+    }
+}
+Example Usage
+
+Instead of repeating audit fields in every entity:
+
+@Entity
+@Table(name = "products")
+public class Product extends Auditable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    // Other fields...
+}
+@Entity
+@Table(name = "categories")
+public class Category extends Auditable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    // Other fields...
+}
+@Entity
+@Table(name = "product_images")
+public class ProductImage extends Auditable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    // Other fields...
+}
+Database Columns Added Automatically
+
+Every entity extending Auditable will inherit:
+
+Column	Description
+created_at	Record creation timestamp
+updated_at	Last modification timestamp
+created_by	Username of creator
+updated_by	Username of last modifier
+Enterprise Benefits
+Eliminates duplicate audit fields across entities.
+Automatically populates timestamps using Spring Data JPA.
+Captures the authenticated user's identity via Spring Security.
+Provides consistent auditing across the application.
+Makes entities cleaner and easier to maintain.
+Optional Enhancement
+
+If your application requires soft delete across many entities (Product, Category, ProductImage, etc.), a common enterprise pattern is to introduce a second base class, for example SoftDeletableAuditable, that extends Auditable and adds common fields like:
+
+deleted
+deletedAt
+deletedBy
+
+This avoids repeating soft-delete fields and logic in every entity.
