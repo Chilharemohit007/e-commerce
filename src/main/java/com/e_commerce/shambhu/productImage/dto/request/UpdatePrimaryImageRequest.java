@@ -1,0 +1,15 @@
+package com.e_commerce.shambhu.productImage.dto.request;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UpdatePrimaryImageRequest {
+
+    @NotNull(message = "Primary image flag is required.")
+    private Boolean primaryImage;
+}

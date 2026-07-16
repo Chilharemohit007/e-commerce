@@ -1,0 +1,27 @@
+Why @Version?
+@Version
+private Long version;
+
+This enables optimistic locking.
+
+Example:
+
+Available Quantity = 10
+
+Customer A buys 8
+
+Customer B buys 5
+
+Both requests arrive simultaneously.
+
+Without @Version:
+
+Available = -3 ❌
+
+With @Version:
+
+Transaction A → Success
+
+Transaction B → OptimisticLockException
+
+This prevents overselling.

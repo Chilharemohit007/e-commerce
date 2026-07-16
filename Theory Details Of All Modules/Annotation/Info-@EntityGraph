@@ -1,0 +1,156 @@
+What is @EntityGraph?
+
+@EntityGraph is a JPA annotation that tells Hibernate to fetch related entities in the same SQL query for a specific repository method.
+
+It helps solve one of the most common performance problems in JPA called the N+1 Query Problem.
+
+Example Without @EntityGraph
+
+Suppose your Product entity has:
+
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "category_id")
+private Category category;
+
+You execute:
+
+List<Product> products = productRepository.findAll();
+
+Hibernate runs:
+
+SELECT * FROM products;
+
+Now you loop through the products:
+
+for (Product product : products) {
+    System.out.println(product.getCategory().getName());
+}
+
+Hibernate executes one extra query for each product:
+
+SELECT * FROM categories WHERE id = 1;
+SELECT * FROM categories WHERE id = 2;
+SELECT * FROM categories WHERE id = 3;
+...
+
+If you have 100 products:
+
+1 query for products
+100 queries for categories
+
+Total = 101 queries
+
+This is called the N+1 Query Problem.
+
+Using @EntityGraph
+
+Repository:
+
+@EntityGraph(attributePaths = "category")
+Page<Product> findByDeletedFalse(Pageable pageable);
+
+Now Hibernate generates a single query like:
+
+SELECT p.*, c.*
+FROM products p
+LEFT JOIN categories c
+ON p.category_id = c.id;
+
+Now:
+
+1 query for products
+0 extra queries for categories
+
+Total = 1 query
+
+Why Not Use FetchType.EAGER?
+
+Many beginners think:
+
+@ManyToOne(fetch = FetchType.EAGER)
+
+is the solution.
+
+It isn't.
+
+Suppose Category later has:
+
+Parent Category
+Products
+Attributes
+
+Every time you load a Product, Hibernate may load much more data than you actually need.
+
+That's why enterprise applications follow this rule:
+
+Default = FetchType.LAZY
+Load relationships only when needed using @EntityGraph or JOIN FETCH
+When Should You Use @EntityGraph?
+
+Use it when you know you'll need related data.
+
+Examples:
+
+@EntityGraph(attributePaths = "category")
+Optional<Product> findById(Long id);
+
+or
+
+@EntityGraph(attributePaths = {"category", "images"})
+Page<Product> findByDeletedFalse(Pageable pageable);
+
+@EntityGraph vs JOIN FETCH
+
+@EntityGraph
+
+Simple to use
+
+Works with Spring Data repository methods
+Cleaner code
+Preferred for common use cases
+
+JOIN FETCH
+
+@Query("""
+SELECT p
+FROM Product p
+JOIN FETCH p.category
+WHERE p.id = :id
+""")
+More flexible
+Better for complex JPQL queries
+Enterprise Best Practice
+
+In professional Spring Boot projects:
+
+Keep all relationships LAZY.
+Use @EntityGraph when a repository method always needs related entities.
+Use JOIN FETCH for complex custom queries.
+Avoid making relationships EAGER by default.
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+ @EntityGraph(attributePaths = "product")
+    Optional<ProductImage> findByIdAndDeletedFalse(Long id);
+
+Why Use @EntityGraph?
+
+Without @EntityGraph:
+
+ProductImage image = repository.findByIdAndDeletedFalse(id).get();
+
+Product product = image.getProduct();
+
+This can result in:
+
+SELECT product_image ...
+
+SELECT product ...
+
+(two queries)
+
+With:
+
+@EntityGraph(attributePaths = "product")
+
+Hibernate performs a fetch join and retrieves both entities in a single query, reducing database round trips and preventing the N+1 select problem.
