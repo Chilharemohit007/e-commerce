@@ -1,8 +1,7 @@
-package com.e_commerce.shambhu.inventory.dto.request;
+package com.e_commerce.shambhu.shoppingCart.cart.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Getter
@@ -10,17 +9,13 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ReserveStockRequest {
+public class UpdateCartItemRequest {
 
+    /**
+     * New Quantity
+     */
     @NotNull(message = "Quantity is required.")
     @Positive(message = "Quantity must be greater than zero.")
     private Integer quantity;
 
-    private Long referenceId;
-
-    @Size(max = 500)
-    private String remarks;
-
-    public ReserveStockRequest(Integer quantity) {
-    }
 }

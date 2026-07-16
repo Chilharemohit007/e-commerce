@@ -75,4 +75,5 @@ public interface InventoryService {
             Long productId,
             Pageable pageable);
 
+    boolean isStockAvailable(Long productId, Integer quantity);
 }

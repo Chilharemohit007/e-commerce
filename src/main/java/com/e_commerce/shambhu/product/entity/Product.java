@@ -4,6 +4,7 @@ import com.e_commerce.shambhu.category.entity.Category;
 import com.e_commerce.shambhu.common.entity.Auditable;
 import com.e_commerce.shambhu.product.enums.ProductStatus;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,6 +27,7 @@ import java.math.BigDecimal;
                 @UniqueConstraint(name = "uk_product_sku", columnNames = "sku")
         }
 )
+@Builder
 public class Product extends Auditable {
 
     @Id

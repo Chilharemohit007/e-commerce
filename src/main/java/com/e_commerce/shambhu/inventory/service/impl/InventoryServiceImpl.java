@@ -687,6 +687,11 @@ public class InventoryServiceImpl implements InventoryService {
         return movements.map(this::mapToInventoryMovementResponse);
     }
 
+    @Override
+    public boolean isStockAvailable(Long productId, Integer quantity) {
+        return false;
+    }
+
     private InventoryMovementResponse mapToInventoryMovementResponse(
             InventoryMovement movement) {
 
