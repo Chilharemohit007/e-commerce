@@ -1,10 +1,10 @@
-package com.e_commerce.shambhu.shoppingCart.cart.service;
+package com.e_commerce.shambhu.shoppingCart.service;
 
 import com.e_commerce.shambhu.order.dto.response.OrderResponse;
-import com.e_commerce.shambhu.shoppingCart.cart.dto.request.AddCartItemRequest;
-import com.e_commerce.shambhu.shoppingCart.cart.dto.request.UpdateCartItemRequest;
-import com.e_commerce.shambhu.shoppingCart.cart.dto.response.CartResponse;
-import com.e_commerce.shambhu.shoppingCart.cart.dto.response.CartSummaryResponse;
+import com.e_commerce.shambhu.shoppingCart.dto.request.AddCartItemRequest;
+import com.e_commerce.shambhu.shoppingCart.dto.request.UpdateCartItemRequest;
+import com.e_commerce.shambhu.shoppingCart.dto.response.CartResponse;
+import com.e_commerce.shambhu.shoppingCart.dto.response.CartSummaryResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface CartService {

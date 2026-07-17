@@ -1,4 +1,4 @@
-package com.e_commerce.shambhu.shoppingCart.cart.enums;
+package com.e_commerce.shambhu.shoppingCart.enums;
 
 public enum CartStatus {
 

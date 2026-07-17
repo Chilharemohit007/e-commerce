@@ -1,7 +1,7 @@
-package com.e_commerce.shambhu.shoppingCart.cart.entity;
+package com.e_commerce.shambhu.shoppingCart.entity;
 
 import com.e_commerce.shambhu.auth.entity.User;
-import com.e_commerce.shambhu.shoppingCart.cart.enums.CartStatus;
+import com.e_commerce.shambhu.shoppingCart.enums.CartStatus;
 import com.e_commerce.shambhu.common.entity.Auditable;
 import jakarta.persistence.*;
 import lombok.*;

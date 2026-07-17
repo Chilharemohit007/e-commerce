@@ -1,4 +1,4 @@
-package com.e_commerce.shambhu.shoppingCart.cart.dto.response;
+package com.e_commerce.shambhu.shoppingCart.dto.response;
 
 import lombok.*;
 

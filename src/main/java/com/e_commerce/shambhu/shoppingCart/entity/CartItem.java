@@ -1,4 +1,4 @@
-package com.e_commerce.shambhu.shoppingCart.cart.entity;
+package com.e_commerce.shambhu.shoppingCart.entity;
 
 import com.e_commerce.shambhu.common.entity.Auditable;
 import com.e_commerce.shambhu.product.entity.Product;

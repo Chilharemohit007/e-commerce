@@ -1,8 +1,8 @@
-package com.e_commerce.shambhu.shoppingCart.cart.repository;
+package com.e_commerce.shambhu.shoppingCart.repository;
 
 import com.e_commerce.shambhu.product.entity.Product;
-import com.e_commerce.shambhu.shoppingCart.cart.entity.Cart;
-import com.e_commerce.shambhu.shoppingCart.cart.entity.CartItem;
+import com.e_commerce.shambhu.shoppingCart.entity.Cart;
+import com.e_commerce.shambhu.shoppingCart.entity.CartItem;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -2,6 +2,7 @@ package com.e_commerce.shambhu.product.productImage.repository;
 
 import com.e_commerce.shambhu.product.entity.Product;
 import com.e_commerce.shambhu.product.productImage.entity.ProductImage;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -44,6 +45,8 @@ public interface ProductImageRepository extends JpaRepository<ProductImage, Long
             Product product,
             Integer displayOrder
     );
+
+    Optional<ProductImage> findByProductIdAndPrimaryImageTrueAndDeletedFalse(Long productId);
 }
 
 /*

@@ -1,4 +1,4 @@
-package com.e_commerce.shambhu.shoppingCart.cart.dto.request;
+package com.e_commerce.shambhu.shoppingCart.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;

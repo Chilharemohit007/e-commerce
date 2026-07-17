@@ -1,6 +1,6 @@
-package com.e_commerce.shambhu.shoppingCart.cart.dto.response;
+package com.e_commerce.shambhu.shoppingCart.dto.response;
 
-import com.e_commerce.shambhu.shoppingCart.cart.enums.CartStatus;
+import com.e_commerce.shambhu.shoppingCart.enums.CartStatus;
 import lombok.*;
 
 import java.math.BigDecimal;

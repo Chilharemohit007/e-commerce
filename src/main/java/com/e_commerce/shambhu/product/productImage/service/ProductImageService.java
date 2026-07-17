@@ -52,6 +52,8 @@ public interface ProductImageService {
             Long productId,
             UpdateImageOrderRequest request
     );
+
+    String getPrimaryImageUrl(Long productId);
 }
 /*| Method               | Responsibility                                              |
 | -------------------- | ----------------------------------------------------------- |

@@ -240,4 +240,13 @@ public class ProductImageServiceImpl implements ProductImageService {
     public void reorderImages(Long productId, UpdateImageOrderRequest request) {
 
     }
+
+    @Override
+    public String getPrimaryImageUrl(Long productId) {
+
+        return productImageRepository
+                .findByProductIdAndPrimaryImageTrueAndDeletedFalse(productId)
+                .map(ProductImage::getImageUrl)
+                .orElse(null);
+    }
 }

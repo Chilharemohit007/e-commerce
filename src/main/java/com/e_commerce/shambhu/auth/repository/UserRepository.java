@@ -13,4 +13,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByMobileNumber(String mobileNumber);
 
     boolean existsByMobileNumber(String mobileNumber);
+
+   // <T> ScopedValue<T> findByEmailAndDeletedFalse(String email);
+
+    Optional<User> findByEmailAndDeletedFalse(String email);
 }
