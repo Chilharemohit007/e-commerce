@@ -372,6 +372,92 @@ public class OrderServiceImpl implements OrderService {
         return orderItems;
     }
 
+    private void calculateOrderTotals(
+            Order order,
+            List<OrderItem> orderItems) {
+
+        LOGGER.info(
+                "Calculating totals for orderNumber={}",
+                order.getOrderNumber()
+        );
+
+        int totalItems = 0;
+
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        BigDecimal totalDiscount = BigDecimal.ZERO;
+        BigDecimal totalTax = BigDecimal.ZERO;
+
+        for (OrderItem item : orderItems) {
+
+            totalItems += item.getQuantity();
+
+            totalAmount = totalAmount.add(
+                    item.getUnitPrice()
+                            .multiply(
+                                    BigDecimal.valueOf(
+                                            item.getQuantity()
+                                    )
+                            )
+            );
+
+            totalDiscount = totalDiscount.add(
+                    item.getDiscountAmount()
+            );
+
+            totalTax = totalTax.add(
+                    item.getTaxAmount()
+            );
+        }
+
+        /*
+         * Shipping Charge
+         * Future:
+         * - Free shipping
+         * - Express shipping
+         * - Zone-wise shipping
+         */
+
+        BigDecimal shippingCharge = BigDecimal.ZERO;
+
+        BigDecimal payableAmount =
+                totalAmount
+                        .subtract(totalDiscount)
+                        .add(totalTax)
+                        .add(shippingCharge);
+
+        order.setTotalItems(totalItems);
+
+        order.setTotalAmount(totalAmount);
+
+        order.setDiscountAmount(totalDiscount);
+
+        order.setTaxAmount(totalTax);
+
+        order.setShippingCharge(shippingCharge);
+
+        order.setPayableAmount(payableAmount);
+
+        LOGGER.info(
+                """
+                Order totals calculated successfully.
+                OrderNumber={}
+                TotalItems={}
+                TotalAmount={}
+                Discount={}
+                Tax={}
+                Shipping={}
+                Payable={}
+                """,
+                order.getOrderNumber(),
+                totalItems,
+                totalAmount,
+                totalDiscount,
+                totalTax,
+                shippingCharge,
+                payableAmount
+        );
+    }
+
     /*private Address getShippingAddress(
             Long addressId,
             User user) {
