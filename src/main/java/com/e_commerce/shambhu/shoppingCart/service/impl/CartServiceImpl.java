@@ -7,6 +7,7 @@ import com.e_commerce.shambhu.common.exception.ResourceNotFoundException;
 import com.e_commerce.shambhu.inventory.dto.request.ReserveStockRequest;
 import com.e_commerce.shambhu.inventory.service.InventoryService;
 import com.e_commerce.shambhu.order.dto.response.OrderResponse;
+import com.e_commerce.shambhu.order.entity.Order;
 import com.e_commerce.shambhu.product.entity.Product;
 import com.e_commerce.shambhu.product.enums.ProductStatus;
 import com.e_commerce.shambhu.product.productImage.entity.ProductImage;
@@ -289,7 +290,7 @@ public class CartServiceImpl implements CartService {
                 )
                 .productName(product.getName())
                 .productSku(product.getSku())
-                .productSlug(product.getSlug())
+                //.productSlug(product.getSlug())
                 .primaryImageUrl(
                         getPrimaryImage(product)
                 )
@@ -590,6 +591,18 @@ public class CartServiceImpl implements CartService {
                     )
             );
         }
+    }
+
+    private Order createOrder(User user, Cart cart, List<CartItem> cartItems) {
+        throw new UnsupportedOperationException(
+                "Order module not implemented yet."
+        );
+    }
+
+    private OrderResponse mapToOrderResponse(Order order) {
+        throw new UnsupportedOperationException(
+                "Order module not implemented yet."
+        );
     }
 
 }
