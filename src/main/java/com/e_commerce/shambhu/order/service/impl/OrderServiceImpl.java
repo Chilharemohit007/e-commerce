@@ -24,6 +24,7 @@ import com.e_commerce.shambhu.order.enums.PaymentStatus;
 import com.e_commerce.shambhu.order.repository.OrderItemRepository;
 import com.e_commerce.shambhu.order.repository.OrderRepository;
 import com.e_commerce.shambhu.order.service.OrderService;
+import com.e_commerce.shambhu.order.validator.OrderValidator;
 import com.e_commerce.shambhu.product.entity.Product;
 import com.e_commerce.shambhu.product.productImage.service.ProductImageService;
 import com.e_commerce.shambhu.shoppingCart.entity.Cart;
@@ -77,6 +78,8 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderMapper orderMapper;
 
+    private final OrderValidator orderValidator;
+
     @Override
     @Transactional
     public OrderResponse placeOrder(CreateOrderRequest request) {
@@ -108,7 +111,7 @@ public class OrderServiceImpl implements OrderService {
         /*
          * 1. Validate Cart
          */
-        validateCart(cart);
+        orderValidator.validateCart(cart);
 
         /*
          * 2. Fetch User
@@ -285,7 +288,7 @@ public class OrderServiceImpl implements OrderService {
                     "You cannot cancel another user's order.");
         }
 
-        validateCancellation(order);
+        orderValidator.validateCancellation(order);
 
         order.setOrderStatus(OrderStatus.CANCELLED);
 
@@ -298,72 +301,6 @@ public class OrderServiceImpl implements OrderService {
                 order.getOrderNumber());
 
         return orderMapper.toResponse(order);
-    }
-
-    private void validateCancellation(Order order) {
-
-        if (order.getOrderStatus() == OrderStatus.SHIPPED
-                || order.getOrderStatus() == OrderStatus.OUT_FOR_DELIVERY
-                || order.getOrderStatus() == OrderStatus.DELIVERED) {
-
-            throw new BusinessException(
-                    "Order cannot be cancelled.");
-        }
-    }
-
-    private void validateStatusTransition(
-            OrderStatus current,
-            OrderStatus next) {
-
-        switch (current) {
-
-            case PENDING -> {
-                if (next != OrderStatus.CONFIRMED
-                        && next != OrderStatus.CANCELLED) {
-                    throw new BusinessException(
-                            "Invalid order status transition.");
-                }
-            }
-
-            case CONFIRMED -> {
-                if (next != OrderStatus.PROCESSING) {
-                    throw new BusinessException(
-                            "Invalid order status transition.");
-                }
-            }
-
-            case PROCESSING -> {
-                if (next != OrderStatus.PACKED) {
-                    throw new BusinessException(
-                            "Invalid order status transition.");
-                }
-            }
-
-            case PACKED -> {
-                if (next != OrderStatus.SHIPPED) {
-                    throw new BusinessException(
-                            "Invalid order status transition.");
-                }
-            }
-
-            case SHIPPED -> {
-                if (next != OrderStatus.OUT_FOR_DELIVERY) {
-                    throw new BusinessException(
-                            "Invalid order status transition.");
-                }
-            }
-
-            case OUT_FOR_DELIVERY -> {
-                if (next != OrderStatus.DELIVERED) {
-                    throw new BusinessException(
-                            "Invalid order status transition.");
-                }
-            }
-
-            default ->
-                    throw new BusinessException(
-                            "Order status cannot be updated.");
-        }
     }
 
     @Override
@@ -379,7 +316,7 @@ public class OrderServiceImpl implements OrderService {
                                         null,
                                         null));
 
-        validateStatusTransition(
+        orderValidator.validateStatusTransition(
                 order.getOrderStatus(),
                 request.getStatus());
 
@@ -396,16 +333,6 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toResponse(order);
     }
 
-    private void validatePaymentTransition(
-            PaymentStatus current,
-            PaymentStatus next) {
-
-        if (current == PaymentStatus.REFUNDED) {
-            throw new BusinessException(
-                    "Payment already refunded.");
-        }
-    }
-
     @Override
     public OrderResponse updatePaymentStatus(
             Long orderId,
@@ -419,7 +346,7 @@ public class OrderServiceImpl implements OrderService {
                                         null,
                                         null));
 
-        validatePaymentTransition(
+        orderValidator.validatePaymentTransition(
                 order.getPaymentStatus(),
                 request.getPaymentStatus());
 
@@ -434,42 +361,6 @@ public class OrderServiceImpl implements OrderService {
                 order.getPaymentStatus());
 
         return orderMapper.toResponse(order);
-    }
-
-    private void validateCart(Cart cart) {
-
-        if (cart == null) {
-            throw new ResourceNotFoundException(
-                    "Shopping cart not found.", null, null
-            );
-        }
-
-        if (Boolean.TRUE.equals(cart.getDeleted())) {
-            throw new BusinessException(
-                    "Shopping cart has been deleted."
-            );
-        }
-
-        if (cart.getStatus() != CartStatus.ACTIVE) {
-            throw new BusinessException(
-                    "Only active carts can be checked out."
-            );
-        }
-
-        List<CartItem> cartItems =
-                cartItemRepository.findByCartAndDeletedFalse(cart);
-
-        if (cartItems.isEmpty()) {
-            throw new BusinessException(
-                    "Shopping cart is empty."
-            );
-        }
-
-        LOGGER.info(
-                "Cart validation completed successfully. CartId={}, ItemCount={}",
-                cart.getId(),
-                cartItems.size()
-        );
     }
 
     private Address getShippingAddress(

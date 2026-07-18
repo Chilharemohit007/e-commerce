@@ -6,6 +6,7 @@ import com.e_commerce.shambhu.common.entity.Auditable;
 import com.e_commerce.shambhu.order.enums.OrderStatus;
 import com.e_commerce.shambhu.order.enums.PaymentMethod;
 import com.e_commerce.shambhu.order.enums.PaymentStatus;
+import com.e_commerce.shambhu.payment.entity.Payment;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -50,6 +51,14 @@ public class Order extends Auditable {
             foreignKey = @ForeignKey(name = "fk_order_user")
     )
     private User user;
+
+    @OneToMany(
+            mappedBy = "order",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @Builder.Default
+    private List<Payment> payments = new ArrayList<>();
 
     /**
      * Unique Order Number
