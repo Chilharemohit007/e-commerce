@@ -1,0 +1,44 @@
+| Current          | Next                 |
+| ---------------- | -------------------- |
+| PENDING          | CONFIRMED, CANCELLED |
+| CONFIRMED        | PROCESSING           |
+| PROCESSING       | PACKED               |
+| PACKED           | SHIPPED              |
+| SHIPPED          | OUT_FOR_DELIVERY     |
+| OUT_FOR_DELIVERY | DELIVERED            |
+| DELIVERED        | RETURN_REQUESTED     |
+| RETURN_REQUESTED | RETURNED             |
+| RETURNED         | REFUNDED             |
+
+
+Not allowed:
+
+SHIPPED → CANCELLED
+DELIVERED → CANCELLED
+REFUNDED → SHIPPED
+RETURNED → PROCESSING
+
+These validations will be enforced inside OrderServiceImpl.
+
+
+
+
+
+Why this enum?
+
+Many tutorials only define:
+
+PENDING
+SHIPPED
+DELIVERED
+CANCELLED
+
+That is insufficient for a production system because:
+
+Warehouse needs PROCESSING
+Packing team needs PACKED
+Delivery partner needs OUT_FOR_DELIVERY
+Customer support needs RETURN_REQUESTED
+Finance needs REFUNDED
+
+This lifecycle supports realistic order fulfillment.

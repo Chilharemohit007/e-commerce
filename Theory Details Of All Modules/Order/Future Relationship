@@ -1,0 +1,8 @@
+Order
+   │
+   ├── Payment (OneToOne)
+   ├── Shipment (OneToOne)
+   ├── Coupon (ManyToOne / Nullable)
+   ├── Notification Logs
+   ├── Return Requests
+   └── Invoice

@@ -1,0 +1,29 @@
+Payment Lifecycle
+PENDING
+    │
+    ▼
+AUTHORIZED
+    │
+    ▼
+PAID
+
+Failure flow
+
+PENDING
+    │
+    ▼
+FAILED
+
+Refund flow
+
+PAID
+   │
+   ▼
+PARTIALLY_REFUNDED
+
+or
+
+PAID
+   │
+   ▼
+REFUNDED

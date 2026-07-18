@@ -46,4 +46,11 @@ public class OrderResponse {
     private LocalDateTime orderedAt;
 
     private LocalDateTime estimatedDeliveryDate;
+
+    // Future
+    private String trackingNumber;
+
+    private String courierName;
+
+    private String couponCode;
 }

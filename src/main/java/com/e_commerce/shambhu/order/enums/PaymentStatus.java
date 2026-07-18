@@ -1,8 +1,18 @@
 package com.e_commerce.shambhu.order.enums;
 
 public enum PaymentStatus {
+
     PENDING,
-    SUCCESS,
+
+    AUTHORIZED,
+
+    PAID,
+
     FAILED,
-    REFUNDED
+
+    CANCELLED,
+
+    REFUNDED,
+
+    PARTIALLY_REFUNDED
 }

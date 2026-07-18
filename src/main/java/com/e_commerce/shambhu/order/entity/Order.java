@@ -71,7 +71,7 @@ public class Order extends Auditable {
             nullable = false,
             length = 30
     )
-    private OrderStatus orderStatus;
+    private OrderStatus orderStatus =  OrderStatus.PENDING;
 
     /**
      * Payment Status
@@ -82,7 +82,7 @@ public class Order extends Auditable {
             nullable = false,
             length = 30
     )
-    private PaymentStatus paymentStatus;
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 
     /**
      * Payment Method

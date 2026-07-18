@@ -3,11 +3,13 @@ package com.e_commerce.shambhu.order.service.impl;
 import com.e_commerce.shambhu.address.entity.Address;
 import com.e_commerce.shambhu.address.repository.AddressRepository;
 import com.e_commerce.shambhu.auth.entity.User;
+import com.e_commerce.shambhu.auth.enums.RoleType;
 import com.e_commerce.shambhu.auth.repository.UserRepository;
 import com.e_commerce.shambhu.common.exception.BusinessException;
 import com.e_commerce.shambhu.common.exception.ForbiddenException;
 import com.e_commerce.shambhu.common.exception.ResourceNotFoundException;
 import com.e_commerce.shambhu.inventory.service.InventoryService;
+import com.e_commerce.shambhu.order.common.OrderMapper;
 import com.e_commerce.shambhu.order.component.OrderNumberGenerator;
 import com.e_commerce.shambhu.order.dto.request.CancelOrderRequest;
 import com.e_commerce.shambhu.order.dto.request.CreateOrderRequest;
@@ -73,44 +75,365 @@ public class OrderServiceImpl implements OrderService {
 
     private final ProductImageService productImageService;
 
+    private final OrderMapper orderMapper;
+
     @Override
+    @Transactional
     public OrderResponse placeOrder(CreateOrderRequest request) {
-        return null;
+
+        LOGGER.info("Initiating order placement.");
+
+        // 1. Get authenticated user
+        User user = getAuthenticatedUser();
+
+        LOGGER.info("Authenticated userId={}", user.getId());
+
+        // 2. Fetch active cart
+        Cart cart = cartRepository
+                .findByUserAndStatusAndDeletedFalse(user, CartStatus.ACTIVE)
+                .orElseThrow(() ->
+                        new BusinessException("Active shopping cart not found."));
+
+        return placeOrder(cart, request);
     }
 
     @Override
-    public OrderResponse placeOrder(Cart cart, CreateOrderRequest request) {
-        return null;
+    @Transactional
+    public OrderResponse placeOrder(
+            Cart cart,
+            CreateOrderRequest request) {
+
+        LOGGER.info("Processing checkout for cartId={}", cart.getId());
+
+        /*
+         * 1. Validate Cart
+         */
+        validateCart(cart);
+
+        /*
+         * 2. Fetch User
+         */
+        User user = cart.getUser();
+
+        /*
+         * 3. Validate Inventory
+         */
+        inventoryService.validateInventory(cart);
+
+        /*
+         * 4. Shipping Address
+         */
+        Address shippingAddress =
+                getShippingAddress(
+                        request.getShippingAddressId(),
+                        user);
+
+        /*
+         * 5. Billing Address
+         */
+        Address billingAddress =
+                getBillingAddress(
+                        request.getBillingAddressId(),
+                        user);
+
+        /*
+         * 6. Fetch Cart Items
+         */
+        List<CartItem> cartItems =
+                cartItemRepository.findByCartAndDeletedFalse(cart);
+
+        /*
+         * 7. Build Order
+         */
+        Order order =
+                buildOrder(
+                        user,
+                        cart,
+                        shippingAddress,
+                        billingAddress,
+                        request);
+
+        /*
+         * 8. Build Order Items
+         */
+        List<OrderItem> orderItems =
+                buildOrderItems(order, cartItems);
+
+        /*
+         * 9. Calculate Totals
+         */
+        calculateOrderTotals(order, orderItems);
+
+        /*
+         * 10. Persist Order
+         */
+        order = orderRepository.save(order);
+
+        /*
+         * 11. Persist Order Items
+         */
+        orderItemRepository.saveAll(orderItems);
+
+        /*
+         * 12. Update Inventory
+         */
+        inventoryService.reduceInventory(cartItems);
+
+        /*
+         * 13. Clear Cart
+         */
+        cartItemRepository.deleteAll(cartItems);
+
+        cart.setStatus(CartStatus.CHECKED_OUT);
+
+        cartRepository.save(cart);
+
+        LOGGER.info(
+                "Order placed successfully. OrderNumber={}",
+                order.getOrderNumber());
+
+        /*
+         * 14. Convert Response
+         */
+        return modelMapper.map(order, OrderResponse.class);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public OrderResponse getOrder(Long orderId) {
-        return null;
+
+        LOGGER.info("Fetching order. OrderId={}", orderId);
+
+        User user = getAuthenticatedUser();
+
+        Order order = orderRepository
+                .findDetailedById(orderId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Order not found.",
+                                null,
+                                null));
+
+        boolean isOwner = order.getUser().getId().equals(user.getId());
+
+        boolean isAdmin = user.getRoles().stream()
+                .anyMatch(role ->
+                        role.getName().equals(RoleType.ROLE_ADMIN));
+
+        if (!isOwner && !isAdmin) {
+            throw new ForbiddenException(
+                    "You are not authorized to access this order.");
+        }
+
+        LOGGER.info(
+                "Order {} fetched successfully.",
+                order.getOrderNumber());
+
+        return orderMapper.toResponse(order);
     }
 
     @Override
-    public Page<OrderSummaryResponse> getMyOrders(Pageable pageable) {
-        return null;
+    @Transactional(readOnly = true)
+    public Page<OrderSummaryResponse> getMyOrders(
+            Pageable pageable) {
+
+        User user = getAuthenticatedUser();
+
+        LOGGER.info(
+                "Fetching orders for userId={}",
+                user.getId());
+
+        Page<Order> orders =
+                orderRepository.findByUser(
+                        user,
+                        pageable);
+
+        return orderMapper.toSummaryPage(orders);
     }
 
     @Override
-    public Page<OrderSummaryResponse> getAllOrders(Pageable pageable) {
-        return null;
+    @Transactional(readOnly = true)
+    public Page<OrderSummaryResponse> getAllOrders(
+            Pageable pageable) {
+
+        LOGGER.info(
+                "Fetching all orders.");
+
+        Page<Order> orders =
+                orderRepository.findAll(pageable);
+
+        return orderMapper.toSummaryPage(orders);
     }
 
     @Override
-    public OrderResponse cancelOrder(Long orderId, CancelOrderRequest request) {
-        return null;
+    public OrderResponse cancelOrder(
+            Long orderId,
+            CancelOrderRequest request) {
+
+        User user = getAuthenticatedUser();
+
+        Order order =
+                orderRepository.findById(orderId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Order not found.",
+                                        null,
+                                        null));
+
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new ForbiddenException(
+                    "You cannot cancel another user's order.");
+        }
+
+        validateCancellation(order);
+
+        order.setOrderStatus(OrderStatus.CANCELLED);
+
+        // order.setCancelledAt(LocalDateTime.now());
+
+        orderRepository.save(order);
+
+        LOGGER.info(
+                "Order {} cancelled successfully.",
+                order.getOrderNumber());
+
+        return orderMapper.toResponse(order);
+    }
+
+    private void validateCancellation(Order order) {
+
+        if (order.getOrderStatus() == OrderStatus.SHIPPED
+                || order.getOrderStatus() == OrderStatus.OUT_FOR_DELIVERY
+                || order.getOrderStatus() == OrderStatus.DELIVERED) {
+
+            throw new BusinessException(
+                    "Order cannot be cancelled.");
+        }
+    }
+
+    private void validateStatusTransition(
+            OrderStatus current,
+            OrderStatus next) {
+
+        switch (current) {
+
+            case PENDING -> {
+                if (next != OrderStatus.CONFIRMED
+                        && next != OrderStatus.CANCELLED) {
+                    throw new BusinessException(
+                            "Invalid order status transition.");
+                }
+            }
+
+            case CONFIRMED -> {
+                if (next != OrderStatus.PROCESSING) {
+                    throw new BusinessException(
+                            "Invalid order status transition.");
+                }
+            }
+
+            case PROCESSING -> {
+                if (next != OrderStatus.PACKED) {
+                    throw new BusinessException(
+                            "Invalid order status transition.");
+                }
+            }
+
+            case PACKED -> {
+                if (next != OrderStatus.SHIPPED) {
+                    throw new BusinessException(
+                            "Invalid order status transition.");
+                }
+            }
+
+            case SHIPPED -> {
+                if (next != OrderStatus.OUT_FOR_DELIVERY) {
+                    throw new BusinessException(
+                            "Invalid order status transition.");
+                }
+            }
+
+            case OUT_FOR_DELIVERY -> {
+                if (next != OrderStatus.DELIVERED) {
+                    throw new BusinessException(
+                            "Invalid order status transition.");
+                }
+            }
+
+            default ->
+                    throw new BusinessException(
+                            "Order status cannot be updated.");
+        }
     }
 
     @Override
-    public OrderResponse updateOrderStatus(Long orderId, UpdateOrderStatusRequest request) {
-        return null;
+    public OrderResponse updateOrderStatus(
+            Long orderId,
+            UpdateOrderStatusRequest request) {
+
+        Order order =
+                orderRepository.findById(orderId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Order not found.",
+                                        null,
+                                        null));
+
+        validateStatusTransition(
+                order.getOrderStatus(),
+                request.getStatus());
+
+        order.setOrderStatus(
+                request.getStatus());
+
+        orderRepository.save(order);
+
+        LOGGER.info(
+                "Order {} updated to {}",
+                order.getOrderNumber(),
+                order.getOrderStatus());
+
+        return orderMapper.toResponse(order);
+    }
+
+    private void validatePaymentTransition(
+            PaymentStatus current,
+            PaymentStatus next) {
+
+        if (current == PaymentStatus.REFUNDED) {
+            throw new BusinessException(
+                    "Payment already refunded.");
+        }
     }
 
     @Override
-    public OrderResponse updatePaymentStatus(Long orderId, UpdatePaymentStatusRequest request) {
-        return null;
+    public OrderResponse updatePaymentStatus(
+            Long orderId,
+            UpdatePaymentStatusRequest request) {
+
+        Order order =
+                orderRepository.findById(orderId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Order not found.",
+                                        null,
+                                        null));
+
+        validatePaymentTransition(
+                order.getPaymentStatus(),
+                request.getPaymentStatus());
+
+        order.setPaymentStatus(
+                request.getPaymentStatus());
+
+        orderRepository.save(order);
+
+        LOGGER.info(
+                "Payment updated. OrderNumber={}, Status={}",
+                order.getOrderNumber(),
+                order.getPaymentStatus());
+
+        return orderMapper.toResponse(order);
     }
 
     private void validateCart(Cart cart) {

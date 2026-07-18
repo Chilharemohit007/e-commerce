@@ -9,8 +9,12 @@ import com.e_commerce.shambhu.inventory.dto.request.ReserveStockRequest;
 import com.e_commerce.shambhu.inventory.dto.request.UpdateInventoryRequest;
 import com.e_commerce.shambhu.inventory.dto.response.InventoryMovementResponse;
 import com.e_commerce.shambhu.inventory.dto.response.InventoryResponse;
+import com.e_commerce.shambhu.shoppingCart.entity.Cart;
+import com.e_commerce.shambhu.shoppingCart.entity.CartItem;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 public interface InventoryService {
 
@@ -76,4 +80,8 @@ public interface InventoryService {
             Pageable pageable);
 
     boolean isStockAvailable(Long productId, Integer quantity);
+
+    void validateInventory(Cart cart);
+
+    void reduceInventory(List<CartItem> cartItems);
 }
