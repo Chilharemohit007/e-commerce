@@ -15,6 +15,9 @@ import com.e_commerce.shambhu.auth.service.RefreshTokenService;
 import com.e_commerce.shambhu.common.exception.BadRequestException;
 import com.e_commerce.shambhu.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,5 +88,28 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponse refreshAccessToken(String refreshToken) {
         return refreshTokenService.refreshAccessToken(refreshToken);
+    }
+
+    @Override
+    public User getAuthenticatedUser() {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getPrincipal())) {
+
+            throw new BadCredentialsException("User is not authenticated.");
+        }
+
+        String email = authentication.getName();
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "User",
+                                "email",
+                                email));
     }
 }

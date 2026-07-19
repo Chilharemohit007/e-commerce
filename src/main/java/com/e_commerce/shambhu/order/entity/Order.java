@@ -5,7 +5,7 @@ import com.e_commerce.shambhu.auth.entity.User;
 import com.e_commerce.shambhu.common.entity.Auditable;
 import com.e_commerce.shambhu.order.enums.OrderStatus;
 import com.e_commerce.shambhu.order.enums.PaymentMethod;
-import com.e_commerce.shambhu.order.enums.PaymentStatus;
+import com.e_commerce.shambhu.order.enums.OrderPaymentStatus;
 import com.e_commerce.shambhu.payment.entity.Payment;
 import jakarta.persistence.*;
 import lombok.*;
@@ -91,7 +91,7 @@ public class Order extends Auditable {
             nullable = false,
             length = 30
     )
-    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+    private OrderPaymentStatus paymentStatus = OrderPaymentStatus.PENDING;
 
     /**
      * Payment Method

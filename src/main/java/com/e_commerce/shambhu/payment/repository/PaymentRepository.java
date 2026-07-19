@@ -1,9 +1,8 @@
 package com.e_commerce.shambhu.payment.repository;
 
-import com.e_commerce.shambhu.auth.entity.User;
 import com.e_commerce.shambhu.order.entity.Order;
 import com.e_commerce.shambhu.order.enums.PaymentMethod;
-import com.e_commerce.shambhu.order.enums.PaymentStatus;
+import com.e_commerce.shambhu.order.enums.OrderPaymentStatus;
 import com.e_commerce.shambhu.payment.entity.Payment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -60,9 +59,9 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
 
-    long countByPaymentStatus(PaymentStatus paymentStatus);
+    long countByPaymentStatus(OrderPaymentStatus paymentStatus);
 
-    List<Payment> findByPaymentStatus(PaymentStatus paymentStatus);
+    List<Payment> findByPaymentStatus(OrderPaymentStatus paymentStatus);
 
     Page<Payment> findAllByOrderByCreatedAtDesc(Pageable pageable);
 

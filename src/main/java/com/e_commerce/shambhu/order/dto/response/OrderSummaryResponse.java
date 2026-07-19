@@ -1,7 +1,7 @@
 package com.e_commerce.shambhu.order.dto.response;
 
 import com.e_commerce.shambhu.order.enums.OrderStatus;
-import com.e_commerce.shambhu.order.enums.PaymentStatus;
+import com.e_commerce.shambhu.order.enums.OrderPaymentStatus;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -20,7 +20,7 @@ public class OrderSummaryResponse {
 
     private OrderStatus orderStatus;
 
-    private PaymentStatus paymentStatus;
+    private OrderPaymentStatus paymentStatus;
 
     private Integer totalItems;
 

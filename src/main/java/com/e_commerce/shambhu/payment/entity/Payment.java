@@ -4,8 +4,9 @@ import com.e_commerce.shambhu.auth.entity.User;
 import com.e_commerce.shambhu.common.entity.Auditable;
 import com.e_commerce.shambhu.order.entity.Order;
 import com.e_commerce.shambhu.order.enums.PaymentMethod;
-import com.e_commerce.shambhu.order.enums.PaymentStatus;
+import com.e_commerce.shambhu.order.enums.OrderPaymentStatus;
 import com.e_commerce.shambhu.payment.enums.PaymentGateway;
+import com.e_commerce.shambhu.payment.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 

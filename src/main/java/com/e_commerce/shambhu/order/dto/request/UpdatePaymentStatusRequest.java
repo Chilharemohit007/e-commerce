@@ -1,6 +1,6 @@
 package com.e_commerce.shambhu.order.dto.request;
 
-import com.e_commerce.shambhu.order.enums.PaymentStatus;
+import com.e_commerce.shambhu.order.enums.OrderPaymentStatus;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -12,7 +12,7 @@ import lombok.*;
 public class UpdatePaymentStatusRequest {
 
     @NotNull(message = "Payment status is required.")
-    private PaymentStatus paymentStatus;
+    private OrderPaymentStatus paymentStatus;
 
     private String transactionReference;
 }

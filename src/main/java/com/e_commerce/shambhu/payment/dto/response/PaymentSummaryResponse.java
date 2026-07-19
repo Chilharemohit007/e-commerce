@@ -1,7 +1,7 @@
 package com.e_commerce.shambhu.payment.dto.response;
 
 import com.e_commerce.shambhu.order.enums.PaymentMethod;
-import com.e_commerce.shambhu.order.enums.PaymentStatus;
+import com.e_commerce.shambhu.order.enums.OrderPaymentStatus;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -24,7 +24,7 @@ public class PaymentSummaryResponse {
 
     private PaymentMethod paymentMethod;
 
-    private PaymentStatus paymentStatus;
+    private OrderPaymentStatus paymentStatus;
 
     private LocalDateTime createdAt;
 }

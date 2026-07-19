@@ -1,7 +1,7 @@
 package com.e_commerce.shambhu.payment.dto.response;
 
 import com.e_commerce.shambhu.order.enums.PaymentMethod;
-import com.e_commerce.shambhu.order.enums.PaymentStatus;
+import com.e_commerce.shambhu.order.enums.OrderPaymentStatus;
 import com.e_commerce.shambhu.payment.enums.PaymentGateway;
 import lombok.*;
 
@@ -37,7 +37,7 @@ public class PaymentResponse {
 
     private PaymentGateway paymentGateway;
 
-    private PaymentStatus paymentStatus;
+    private OrderPaymentStatus paymentStatus;
 
     private String gatewayOrderId;
 

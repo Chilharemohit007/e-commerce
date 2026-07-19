@@ -6,5 +6,6 @@ public enum PaymentGateway {
     PAYPAL,
     PHONEPE,
     COD,
-    MANUAL
+    MANUAL,
+    MOCK
 }

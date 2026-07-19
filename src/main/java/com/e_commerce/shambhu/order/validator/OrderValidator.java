@@ -4,7 +4,7 @@ import com.e_commerce.shambhu.common.exception.BusinessException;
 import com.e_commerce.shambhu.common.exception.ResourceNotFoundException;
 import com.e_commerce.shambhu.order.entity.Order;
 import com.e_commerce.shambhu.order.enums.OrderStatus;
-import com.e_commerce.shambhu.order.enums.PaymentStatus;
+import com.e_commerce.shambhu.order.enums.OrderPaymentStatus;
 import com.e_commerce.shambhu.shoppingCart.entity.Cart;
 import com.e_commerce.shambhu.shoppingCart.entity.CartItem;
 import com.e_commerce.shambhu.shoppingCart.enums.CartStatus;
@@ -89,10 +89,10 @@ public class OrderValidator {
     }
 
     public void validatePaymentTransition(
-            PaymentStatus current,
-            PaymentStatus next) {
+            OrderPaymentStatus current,
+            OrderPaymentStatus next) {
 
-        if (current == PaymentStatus.REFUNDED) {
+        if (current == OrderPaymentStatus.REFUNDED) {
             throw new BusinessException(
                     "Payment already refunded.");
         }

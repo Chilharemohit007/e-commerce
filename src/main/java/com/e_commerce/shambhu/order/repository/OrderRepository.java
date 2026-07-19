@@ -3,7 +3,7 @@ package com.e_commerce.shambhu.order.repository;
 import com.e_commerce.shambhu.auth.entity.User;
 import com.e_commerce.shambhu.order.entity.Order;
 import com.e_commerce.shambhu.order.enums.OrderStatus;
-import com.e_commerce.shambhu.order.enums.PaymentStatus;
+import com.e_commerce.shambhu.order.enums.OrderPaymentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -55,7 +55,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     );
 
     Page<Order> findByPaymentStatus(
-            PaymentStatus paymentStatus,
+            OrderPaymentStatus paymentStatus,
             Pageable pageable
     );
 
@@ -135,7 +135,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             Pageable pageable);
 
     Page<Order> findByPaymentStatusAndDeletedFalse(
-            PaymentStatus paymentStatus,
+            OrderPaymentStatus paymentStatus,
             Pageable pageable);
 
     boolean existsByOrderNumber(String orderNumber);

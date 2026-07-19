@@ -20,7 +20,7 @@ import com.e_commerce.shambhu.order.dto.response.OrderSummaryResponse;
 import com.e_commerce.shambhu.order.entity.Order;
 import com.e_commerce.shambhu.order.entity.OrderItem;
 import com.e_commerce.shambhu.order.enums.OrderStatus;
-import com.e_commerce.shambhu.order.enums.PaymentStatus;
+import com.e_commerce.shambhu.order.enums.OrderPaymentStatus;
 import com.e_commerce.shambhu.order.repository.OrderItemRepository;
 import com.e_commerce.shambhu.order.repository.OrderRepository;
 import com.e_commerce.shambhu.order.service.OrderService;
@@ -448,7 +448,7 @@ public class OrderServiceImpl implements OrderService {
         );
 
         order.setPaymentStatus(
-                PaymentStatus.PENDING
+                OrderPaymentStatus.PENDING
         );
 
         order.setPaymentMethod(
