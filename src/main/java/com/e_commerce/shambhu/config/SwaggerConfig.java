@@ -1,6 +1,4 @@
-package in.gov.egramswaraj.user_service.config;
-
-import java.util.Arrays;
+package com.e_commerce.shambhu.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -12,14 +10,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 
+import java.util.Arrays;
+
 @Configuration
 public class SwaggerConfig {
 
     @Bean
     public OpenAPI swaggerCustomConfig() {
         return new OpenAPI().info(
-                        new Info().title("eGramSwaraj 2.0 APIs")
-                ).servers(Arrays.asList(new Server().url("http://localhost:9092/demo-reports/user"),
+                        new Info().title("eCommerce APIs")
+                ).servers(Arrays.asList(new Server().url("http://localhost:8080"),
                         new Server().url("https://egramswaraj.gov.in/demo-reports/user")))
                 .components(new Components().addSecuritySchemes(
                         "bearerAuth", new SecurityScheme()

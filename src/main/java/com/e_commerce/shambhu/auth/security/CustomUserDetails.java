@@ -2,6 +2,7 @@ package com.e_commerce.shambhu.auth.security;
 
 import com.e_commerce.shambhu.auth.entity.Role;
 import com.e_commerce.shambhu.auth.entity.User;
+import com.e_commerce.shambhu.auth.enums.RoleType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -85,5 +86,23 @@ public class CustomUserDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         return enabled;
+    }
+
+    public boolean hasRole(String role) {
+
+        return authorities.stream()
+                .anyMatch(authority -> authority.getAuthority().equals(role));
+    }
+
+    public boolean isAdmin() {
+        return hasRole(String.valueOf(RoleType.ROLE_ADMIN));
+    }
+
+    public boolean isCustomer() {
+        return hasRole(String.valueOf(RoleType.ROLE_CUSTOMER));
+    }
+
+    public boolean isSeller() {
+        return hasRole(String.valueOf(RoleType.ROLE_SELLER));
     }
 }

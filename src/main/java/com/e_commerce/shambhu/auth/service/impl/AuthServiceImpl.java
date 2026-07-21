@@ -10,6 +10,7 @@ import com.e_commerce.shambhu.auth.enums.RoleType;
 import com.e_commerce.shambhu.auth.mapper.UserMapper;
 import com.e_commerce.shambhu.auth.repository.RoleRepository;
 import com.e_commerce.shambhu.auth.repository.UserRepository;
+import com.e_commerce.shambhu.auth.security.CustomUserDetails;
 import com.e_commerce.shambhu.auth.service.AuthService;
 import com.e_commerce.shambhu.auth.service.RefreshTokenService;
 import com.e_commerce.shambhu.common.exception.BadRequestException;
@@ -111,5 +112,21 @@ public class AuthServiceImpl implements AuthService {
                                 "User",
                                 "email",
                                 email));
+    }
+
+    @Override
+    public CustomUserDetails getAuthenticatedUserDetails() {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || authentication.getPrincipal().equals("anonymousUser")) {
+
+            throw new BadCredentialsException("User is not authenticated.");
+        }
+
+        return (CustomUserDetails) authentication.getPrincipal();
     }
 }

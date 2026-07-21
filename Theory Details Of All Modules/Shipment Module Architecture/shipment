@@ -1,0 +1,86 @@
+Shipment Module Architecture
+
+shipment
+│
+├── controller
+│     └── ShipmentController
+│
+├── service
+│     ├── ShipmentService
+│     └── impl
+│            └── ShipmentServiceImpl
+│
+├── repository
+│     └── ShipmentRepository
+│
+├── entity
+│     └── Shipment
+│
+├── dto
+│     ├── request
+│     │      ├── CreateShipmentRequest
+│     │      ├── UpdateShipmentStatusRequest
+│     │      └── AssignTrackingRequest
+│     │
+│     └── response
+│            ├── ShipmentResponse
+│            └── ShipmentSummaryResponse
+│
+├── mapper
+│     └── ShipmentMapper
+│
+├── validator
+│     └── ShipmentValidator
+│
+├── enums
+│     ├── ShipmentStatus
+│     └── DeliveryPartner
+│
+└── util
+      └── TrackingNumberGenerator
+
+
+
+
+Shipment Lifecycle
+
+    CREATED
+        │
+        ▼
+    PACKED
+        │
+        ▼
+    READY_FOR_DISPATCH
+        │
+        ▼
+    SHIPPED
+        │
+        ▼
+    OUT_FOR_DELIVERY
+        │
+        ├──────────────► DELIVERY_FAILED
+        │                       │
+        │                       ▼
+        │               OUT_FOR_DELIVERY
+        │
+        ▼
+    DELIVERED
+        │
+        ▼
+    RETURNED
+
+
+
+Database Relationships
+
+
+      User
+       │
+       ├──────────────┐
+       │              │
+       ▼              ▼
+      Order 1 ------ 1 Shipment
+       │
+       ├───────< OrderItems
+       │
+       └───────< Payments
