@@ -96,5 +96,9 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>,
     """)
     List<Payment> findRefundablePayments();
 
+    /*Method that returns only the authenticated user's latest payments first:*/
+    Page<Payment> findByUserIdOrderByCreatedAtDesc(Long id, Pageable pageable);
 
+    /*Responsibilities : Fetch all payments for a specific order*/
+    Page<Payment> findByOrderIdOrderByCreatedAtDesc(Long orderId, Pageable pageable);
 }

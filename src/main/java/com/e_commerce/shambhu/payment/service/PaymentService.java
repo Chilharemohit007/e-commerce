@@ -7,6 +7,7 @@ import com.e_commerce.shambhu.payment.dto.response.PaymentResponse;
 import com.e_commerce.shambhu.payment.dto.response.PaymentSummaryResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -36,6 +37,11 @@ public interface PaymentService {
      * Payment attempts for an order.
      */
     List<PaymentResponse> getOrderPayments(Long orderId);
+
+    @Transactional(readOnly = true)
+    Page<PaymentSummaryResponse> getOrderPayments(
+            Long orderId,
+            Pageable pageable);
 
     /**
      * Refund payment.
